@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Datenschutz · Marcos Caprile-Santos</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Datenschutz</h1>
+
+      <p class="muted">
+        Diese Website setzt keine Cookies und nutzt kein Tracking. Es werden keine personenbezogenen Daten
+        automatisch gespeichert. Wenn du mir per E-Mail schreibst, werden die von dir übermittelten Daten
+        (z. B. E-Mail-Adresse, Inhalt der Nachricht) zur Bearbeitung deiner Anfrage verwendet.
+      </p>
+
+      <p class="fine">
+        Stand: <span id="d"></span>
+      </p>
+
+      <p class="fine"><a href="index.html">← Zurück</a></p>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("d").textContent = new Date().toLocaleDateString("de-DE");
+  </script>
+</body>
+</html>
