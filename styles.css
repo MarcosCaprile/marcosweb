@@ -39,7 +39,15 @@ h1{margin:0; font-size: 34px; letter-spacing: -0.02em}
   background: rgba(255,255,255,0.03);
   border-radius: 8px;
 }
-
+.motto::before{
+  content: "MY MOTTO";
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
 
 .nav{
   display:flex;
