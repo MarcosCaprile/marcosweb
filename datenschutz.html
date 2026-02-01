@@ -4,25 +4,38 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Datenschutz · Marcos Caprile-Santos</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="wrap">
-    <section class="card">
-      <h1>Datenschutz</h1>
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <a class="logo" href="index.html"><span class="logo-dot"></span><span>Marcos</span></a>
+      <a class="btn btn-ghost" href="index.html">← Zurück</a>
+    </div>
+  </div>
 
-      <p class="muted">
-        Diese Website setzt keine Cookies und nutzt kein Tracking. Es werden keine personenbezogenen Daten
-        automatisch gespeichert. Wenn du mir per E-Mail schreibst, werden die von dir übermittelten Daten
-        (z. B. E-Mail-Adresse, Inhalt der Nachricht) zur Bearbeitung deiner Anfrage verwendet.
-      </p>
+  <main class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Datenschutz</h2>
+        <p>Kurze, klare Info</p>
+      </div>
 
-      <p class="fine">
-        Stand: <span id="d"></span>
-      </p>
+      <div class="card">
+        <p class="muted">
+          Diese Website setzt keine Cookies und nutzt kein Tracking. Es werden keine personenbezogenen Daten
+          automatisch gespeichert. Wenn du mir per E-Mail schreibst, werden die von dir übermittelten Daten
+          (z. B. E-Mail-Adresse, Inhalt der Nachricht) zur Bearbeitung deiner Anfrage verwendet.
+        </p>
 
-      <p class="fine"><a href="index.html">← Zurück</a></p>
-    </section>
+        <p class="muted">Stand: <span id="d"></span></p>
+      </div>
+    </div>
   </main>
 
   <script>
