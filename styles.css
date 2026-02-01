@@ -1,18 +1,19 @@
 :root{
   /* Paper / Ink */
   --bg:#fbfaf7;                 /* warmes Weiß */
-  --card: rgba(255,255,255,.72);
-  --text:#0f1a14;               /* tiefes Grün-Schwarz */
-  --muted: rgba(15,26,20,.68);
-  --line: rgba(15,26,20,.14);
+  --card: rgba(255,255,255,.78);
+  --text:#0f1a14;
+  --muted: rgba(15,26,20,.70);
+  --line: rgba(15,26,20,.18);
 
-  /* Dark-green accents */
-  --link:#0b3d2a;
-  --link2:#0f5a3d;
-  --accentDeep:#072a1d;           /* noch dunkler für starke Akzente */
-  --accentLine: rgba(11,61,42,.28);
-  --accentTint: rgba(11,61,42,.09);
-  --accentTint2: rgba(11,61,42,.14);
+  /* Dark-green accents (deutlich sichtbar) */
+  --green:#0b3d2a;              /* Haupt-Akzent */
+  --green2:#0f5a3d;             /* Hover */
+  --greenDeep:#072a1d;          /* sehr dunkel */
+  --greenBorder: rgba(11,61,42,.85); /* << sichtbarer Rahmen */
+  --greenBorderSoft: rgba(11,61,42,.45);
+  --greenTint: rgba(11,61,42,.08);
+  --greenTint2: rgba(11,61,42,.12);
 
   --radius: 18px;
 }
@@ -28,16 +29,16 @@ body{
   line-height: 1.75;
 }
 
-/* ganz subtiler künstlerischer Hintergrund */
+/* subtiler künstlerischer Hintergrund */
 body::before{
   content:"";
   position: fixed;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(900px 520px at 12% 0%, rgba(11,61,42,.09), transparent 55%),
-    radial-gradient(700px 480px at 92% 8%, rgba(11,61,42,.06), transparent 60%);
-  opacity: .9;
+    radial-gradient(900px 520px at 12% 0%, rgba(11,61,42,.10), transparent 55%),
+    radial-gradient(700px 480px at 92% 8%, rgba(11,61,42,.08), transparent 60%);
+  opacity: .95;
 }
 
 .wrap{max-width: 980px; margin: 0 auto; padding: 22px;}
@@ -49,6 +50,8 @@ body::before{
   justify-content:space-between;
   gap:16px;
   padding-top:30px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(11,61,42,.22); /* grüne Linie im Kopf */
 }
 
 h1{
@@ -63,7 +66,7 @@ h1{
 .sub{
   margin:8px 0 0;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 650;
 }
 
 /* Motto als Editorial Pullquote */
@@ -75,11 +78,11 @@ h1{
   font-weight: 650;
   font-family: "Fraunces", serif;
 
-  border-left: 6px solid var(--link);
+  border-left: 8px solid var(--green);            /* dicker und klar */
   padding: 12px 14px 12px 18px;
 
   color: rgba(15,26,20,.92);
-  background: linear-gradient(90deg, var(--accentTint2), transparent 70%);
+  background: linear-gradient(90deg, var(--greenTint2), transparent 75%);
   border-radius: 14px;
 }
 
@@ -93,30 +96,45 @@ h1{
 }
 
 .nav a{
-  color: rgba(11,61,42,.78);
+  color: var(--greenDeep);             /* grün statt grau */
   text-decoration:none;
-  border-bottom:1px solid transparent;
+  border-bottom:2px solid transparent; /* sichtbarer underline */
   padding: 6px 2px;
-  font-weight: 650;
+  font-weight: 700;
+  letter-spacing: .01em;
 }
 
 .nav a:hover{
-  color: var(--accentDeep);
-  border-bottom-color: rgba(11,61,42,.35);
+  color: var(--green2);
+  border-bottom-color: rgba(11,61,42,.55);
 }
 
-/* Cards */
+/* Cards (HIER: klare grüne RÄNDER!) */
 .card{
   background: var(--card);
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--accentLine);
+
+  /* dicke sichtbare grüne Border */
+  border: 2px solid var(--greenBorder);
+
+  /* optional: oben noch ein grüner Balken wie ein „Label“ */
+  box-shadow: 0 10px 28px rgba(15,26,20,.06);
   border-radius: var(--radius);
   padding: 20px;
-  margin: 14px 0;
-  box-shadow: 0 10px 28px rgba(15,26,20,.06);
+  margin: 16px 0;
   backdrop-filter: blur(6px);
 }
 
+/* Damit es “designer” wirkt: leichtes Grün oben */
+.card::before{
+  content:"";
+  display:block;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(11,61,42,.95), rgba(11,61,42,.25));
+  margin: -20px -20px 16px; /* zieht in den Rand */
+}
+
+/* Überschriften mit grünem Marker */
 h2{
   margin:0 0 10px;
   font-family: "Fraunces", serif;
@@ -126,7 +144,7 @@ h2{
   color: var(--text);
 
   position: relative;
-  padding-left: 12px;
+  padding-left: 14px;
 }
 
 h2::before{
@@ -134,38 +152,38 @@ h2::before{
   position:absolute;
   left:0;
   top: 0.35em;
-  width: 6px;
-  height: 0.9em;
+  width: 8px;
+  height: 0.95em;
   border-radius: 6px;
-  background: var(--link);
+  background: var(--green);
 }
 
 .mini{
   margin:16px 0 8px;
   font-size: 12.5px;
-  color: rgba(15,26,20,.62);
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  color: rgba(11,61,42,.85);    /* mini-heading grün */
+  font-weight: 900;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 h4{margin:0 0 6px; font-size: 16px}
 
 .muted{color: var(--muted)}
-.fine{color: var(--muted); font-size: 13px; margin: 12px 0 0}
+.fine{color: rgba(15,26,20,.60); font-size: 13px; margin: 12px 0 0}
 
 /* Links (grüne Underlines) */
 a{
-  color: var(--link);
+  color: var(--green);
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
-  text-decoration-color: rgba(11,61,42,.28);
+  text-decoration-color: rgba(11,61,42,.45);
 }
 
 a:hover{
-  color: var(--link2);
-  text-decoration-color: rgba(11,61,42,.55);
+  color: var(--green2);
+  text-decoration-color: rgba(11,61,42,.75);
 }
 
 /* Facts */
@@ -180,10 +198,10 @@ a:hover{
   grid-template-columns: 170px 1fr;
   gap: 12px;
   padding: 10px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(11,61,42,.22); /* grünliche Linie */
 }
 .facts div:first-child{border-top:none}
-dt{color: rgba(15,26,20,.6); font-weight: 700}
+dt{color: rgba(11,61,42,.85); font-weight: 800} /* dt grün */
 dd{margin:0}
 
 /* Timeline */
@@ -196,13 +214,13 @@ dd{margin:0}
   display:flex;
   gap:14px;
   padding: 10px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(11,61,42,.22);
 }
 .timeline li:first-child{border-top:none}
 .when{
   width: 140px;
-  color: rgba(15,26,20,.6);
-  font-weight: 800;
+  color: rgba(11,61,42,.85);
+  font-weight: 900;
 }
 .what{flex:1}
 
@@ -210,7 +228,7 @@ dd{margin:0}
 .bullets{
   margin: 0;
   padding-left: 18px;
-  color: rgba(15,26,20,.72);
+  color: rgba(15,26,20,.78);
 }
 .bullets li{margin:4px 0}
 
@@ -228,14 +246,14 @@ dd{margin:0}
   gap: 10px;
 }
 .qa-row{
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(11,61,42,.22);
   padding-top: 10px;
 }
 .qa-row:first-child{
   border-top: none;
   padding-top: 0;
 }
-.q{color: rgba(15,26,20,.62); font-weight: 800}
+.q{color: rgba(11,61,42,.85); font-weight: 900}
 .a{margin-top: 4px}
 
 /* Social */
@@ -249,10 +267,10 @@ dd{margin:0}
   grid-template-columns: 110px 1fr;
   gap: 12px;
   padding: 10px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(11,61,42,.22);
 }
 .social li:first-child{border-top:none}
-.label{color: rgba(15,26,20,.62); font-weight: 800}
+.label{color: rgba(11,61,42,.85); font-weight: 900}
 .handles{
   display:flex;
   flex-wrap:wrap;
@@ -260,37 +278,36 @@ dd{margin:0}
 }
 .handles a{
   text-decoration:none;
-  border-bottom: 1px solid transparent;
+  border-bottom: 2px solid transparent;
 }
-.handles a:hover{border-bottom-color: rgba(11,61,42,.35)}
+.handles a:hover{border-bottom-color: rgba(11,61,42,.55)}
 
 /* Contact */
-.contact p{margin: 8px 0; color: rgba(15,26,20,.72)}
-.contact strong{color: var(--text)}
+.contact p{margin: 8px 0; color: rgba(15,26,20,.78)}
+.contact strong{color: var(--greenDeep)}
 
 /* Footer */
 .footer{
   display:flex;
   justify-content:space-between;
   gap:12px;
-  color: var(--muted);
+  color: rgba(15,26,20,.68);
   padding-bottom: 34px;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(11,61,42,.22);
+  margin-top: 18px;
 }
 
 /* Project cards (klickbar + pro Hover) */
 .project-card{
   display:block;
-  border: 1px solid var(--line);
-  border-left: 3px solid rgba(11,61,42,.22);
+  border: 2px solid rgba(11,61,42,.55); /* klar grün */
   border-radius: 16px;
   padding: 16px;
-  background: rgba(11,61,42,0.02);
+  background: rgba(11,61,42,0.03);
   text-decoration: none;
   color: var(--text);
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, border-left-color 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
   margin: 10px 0;
 }
 
@@ -308,9 +325,8 @@ dd{margin:0}
 
 .project-card:hover{
   transform: translateY(-3px);
-  border-color: rgba(11,61,42,.55);
-  border-left-color: rgba(11,61,42,.65);
-  background: rgba(11,61,42,0.075);
+  border-color: rgba(11,61,42,.95);
+  background: rgba(11,61,42,0.09);
 }
 
 /* Mobile */
@@ -323,4 +339,3 @@ dd{margin:0}
   .social li{grid-template-columns: 1fr}
   .footer{flex-direction:column}
 }
-
