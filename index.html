@@ -320,7 +320,19 @@
   <footer class="wrap footer">
     <p>© <span id="y"></span> Marcos Caprile-Santos</p>
   </footer>
+  <script>
+  const hero = document.getElementById("hero");
+  const topbar = document.getElementById("topbar");
 
+  window.addEventListener("scroll", () => {
+    const heroHeight = hero.offsetHeight;
+    if (window.scrollY > heroHeight - 100) {
+      topbar.classList.add("visible");
+    } else {
+      topbar.classList.remove("visible");
+    }
+  });
+</script>
   <script>
     document.getElementById("y").textContent = new Date().getFullYear();
   </script>
