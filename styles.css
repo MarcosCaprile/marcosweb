@@ -9,7 +9,10 @@
   /* Dark-green accents */
   --link:#0b3d2a;
   --link2:#0f5a3d;
-  --accentTint: rgba(11,61,42,.06);
+  --accentDeep:#072a1d;           /* noch dunkler für starke Akzente */
+  --accentLine: rgba(11,61,42,.28);
+  --accentTint: rgba(11,61,42,.09);
+  --accentTint2: rgba(11,61,42,.14);
 
   --radius: 18px;
 }
@@ -72,11 +75,12 @@ h1{
   font-weight: 650;
   font-family: "Fraunces", serif;
 
-  border-left: 4px solid var(--link);
-  padding: 10px 0 10px 16px;
+  border-left: 6px solid var(--link);
+  padding: 12px 14px 12px 18px;
+
   color: rgba(15,26,20,.92);
-  background: linear-gradient(90deg, var(--accentTint), transparent);
-  border-radius: 12px;
+  background: linear-gradient(90deg, var(--accentTint2), transparent 70%);
+  border-radius: 14px;
 }
 
 /* Navigation */
@@ -89,26 +93,26 @@ h1{
 }
 
 .nav a{
-  color: var(--muted);
+  color: rgba(11,61,42,.78);
   text-decoration:none;
   border-bottom:1px solid transparent;
   padding: 6px 2px;
+  font-weight: 650;
 }
 
 .nav a:hover{
-  color: var(--text);
-  border-bottom-color: var(--line);
+  color: var(--accentDeep);
+  border-bottom-color: rgba(11,61,42,.35);
 }
 
 /* Cards */
 .card{
   background: var(--card);
   border: 1px solid var(--line);
+  border-left: 4px solid var(--accentLine);
   border-radius: var(--radius);
   padding: 20px;
   margin: 14px 0;
-
-  /* wirkt „pro“ ohne Heavy Shadow */
   box-shadow: 0 10px 28px rgba(15,26,20,.06);
   backdrop-filter: blur(6px);
 }
@@ -120,6 +124,20 @@ h2{
   font-size: 19px;
   letter-spacing: -0.01em;
   color: var(--text);
+
+  position: relative;
+  padding-left: 12px;
+}
+
+h2::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top: 0.35em;
+  width: 6px;
+  height: 0.9em;
+  border-radius: 6px;
+  background: var(--link);
 }
 
 .mini{
@@ -136,9 +154,19 @@ h4{margin:0 0 6px; font-size: 16px}
 .muted{color: var(--muted)}
 .fine{color: var(--muted); font-size: 13px; margin: 12px 0 0}
 
-/* Links */
-a{color: var(--link); text-underline-offset: 4px;}
-a:hover{color: var(--link2); text-decoration: underline;}
+/* Links (grüne Underlines) */
+a{
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(11,61,42,.28);
+}
+
+a:hover{
+  color: var(--link2);
+  text-decoration-color: rgba(11,61,42,.55);
+}
 
 /* Facts */
 .facts{
@@ -256,12 +284,13 @@ dd{margin:0}
 .project-card{
   display:block;
   border: 1px solid var(--line);
+  border-left: 3px solid rgba(11,61,42,.22);
   border-radius: 16px;
   padding: 16px;
   background: rgba(11,61,42,0.02);
   text-decoration: none;
   color: var(--text);
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, border-left-color 0.18s ease;
   margin: 10px 0;
 }
 
@@ -279,8 +308,9 @@ dd{margin:0}
 
 .project-card:hover{
   transform: translateY(-3px);
-  border-color: rgba(11,61,42,.45);
-  background: rgba(11,61,42,0.055);
+  border-color: rgba(11,61,42,.55);
+  border-left-color: rgba(11,61,42,.65);
+  background: rgba(11,61,42,0.075);
 }
 
 /* Mobile */
@@ -293,3 +323,4 @@ dd{margin:0}
   .social li{grid-template-columns: 1fr}
   .footer{flex-direction:column}
 }
+
