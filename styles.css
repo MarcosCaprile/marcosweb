@@ -17,6 +17,11 @@
 html,body{margin:0;padding:0}
 html{scroll-behavior:smooth;}
 
+/* sorgt dafür, dass Anker-Scroll unter der festen Topbar landet */
+html { scroll-padding-top: 84px; }
+section { scroll-margin-top: 84px; }
+
+
 body{
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background: var(--cream);
