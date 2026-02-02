@@ -585,77 +585,62 @@ body{
   .card{ padding: 18px; border-radius: 18px; }
   .project-card{ padding: 14px; }
 }
+
 /* ===========================
-   Scroll Reveal Animations
+   Scroll Reveal Animations (safe)
    =========================== */
 
-.reveal{
+/* Standard: sichtbar (damit nichts verschwindet, wenn JS failt) */
+.reveal,
+.stagger > *{
+  opacity: 1;
+  transform: none;
+}
+
+/* Nur wenn JS aktiv ist, verstecken wir initial und animieren */
+.js .reveal{
   opacity: 0;
   transform: translateY(18px);
   transition: opacity .7s ease, transform .7s ease;
   will-change: opacity, transform;
 }
 
-.reveal.in{
+.js .reveal.in{
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Stagger für Inhalte innerhalb einer Section */
-.stagger > *{
+.js .stagger > *{
   opacity: 0;
   transform: translateY(14px);
   transition: opacity .65s ease, transform .65s ease;
 }
 
-.stagger.in > *{
+.js .stagger.in > *{
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Verzögerungen automatisch (bis 12 Elemente) */
-.stagger.in > *:nth-child(1){ transition-delay: .05s; }
-.stagger.in > *:nth-child(2){ transition-delay: .10s; }
-.stagger.in > *:nth-child(3){ transition-delay: .15s; }
-.stagger.in > *:nth-child(4){ transition-delay: .20s; }
-.stagger.in > *:nth-child(5){ transition-delay: .25s; }
-.stagger.in > *:nth-child(6){ transition-delay: .30s; }
-.stagger.in > *:nth-child(7){ transition-delay: .35s; }
-.stagger.in > *:nth-child(8){ transition-delay: .40s; }
-.stagger.in > *:nth-child(9){ transition-delay: .45s; }
-.stagger.in > *:nth-child(10){ transition-delay: .50s; }
-.stagger.in > *:nth-child(11){ transition-delay: .55s; }
-.stagger.in > *:nth-child(12){ transition-delay: .60s; }
+/* Stagger Delays (bis 12 Elemente) */
+.js .stagger.in > *:nth-child(1){ transition-delay: .05s; }
+.js .stagger.in > *:nth-child(2){ transition-delay: .10s; }
+.js .stagger.in > *:nth-child(3){ transition-delay: .15s; }
+.js .stagger.in > *:nth-child(4){ transition-delay: .20s; }
+.js .stagger.in > *:nth-child(5){ transition-delay: .25s; }
+.js .stagger.in > *:nth-child(6){ transition-delay: .30s; }
+.js .stagger.in > *:nth-child(7){ transition-delay: .35s; }
+.js .stagger.in > *:nth-child(8){ transition-delay: .40s; }
+.js .stagger.in > *:nth-child(9){ transition-delay: .45s; }
+.js .stagger.in > *:nth-child(10){ transition-delay: .50s; }
+.js .stagger.in > *:nth-child(11){ transition-delay: .55s; }
+.js .stagger.in > *:nth-child(12){ transition-delay: .60s; }
 
-/* Hover micro-interactions (luxury, subtle) */
-.project-card{
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
-}
-.project-card:hover{
-  transform: translateY(-3px);
-}
-
-/* Hero intro */
-.hero .hero-inner{
-  opacity: 0;
-  transform: translateY(10px);
-  animation: heroIn .9s ease forwards;
-  animation-delay: .05s;
-}
-@keyframes heroIn{
-  to{ opacity: 1; transform: translateY(0); }
-}
-
-/* Reduced motion: alles sofort sichtbar */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce){
-  .reveal, .stagger > *{
+  .js .reveal, .js .stagger > *{
     transition: none !important;
     transform: none !important;
     opacity: 1 !important;
   }
-  .hero .hero-inner{
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
 }
+
