@@ -644,3 +644,92 @@ body{
   }
 }
 
+/* ===========================
+   (4) Scroll Progress Bar
+   =========================== */
+.progress{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 2000;
+  background: transparent;
+}
+.progress .bar{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(184,155,94,.35), rgba(184,155,94,.95));
+  box-shadow: 0 0 18px rgba(184,155,94,.35);
+  transform-origin: left center;
+}
+
+/* ===========================
+   (2) Hero Intro Animation
+   =========================== */
+.hero-inner > *{
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.js .hero-inner{
+  /* sorgt dafür, dass die Transition sauber greift */
+  will-change: transform, opacity;
+}
+
+.js .hero-inner.is-in > *{
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .75s ease, transform .75s ease;
+}
+
+/* Stagger delays: Reihenfolge */
+.js .hero-inner.is-in h1{ transition-delay: .08s; }
+.js .hero-inner.is-in .hero-sub{ transition-delay: .18s; }
+.js .hero-inner.is-in .hero-motto{ transition-delay: .30s; }
+.js .hero-inner.is-in .scroll-indicator{ transition-delay: .46s; }
+
+/* Optional: ganz leichte Textschärfe beim Rein kommen */
+.js .hero-inner.is-in .hero-motto{
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+/* ===========================
+   (3) Premium Hover: Projektkarten
+   =========================== */
+.project-card{
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, border-left-color .22s ease;
+}
+
+/* zarter “Luxus”-Schimmer */
+.project-card::after{
+  content:"";
+  position:absolute;
+  inset:-40% -30%;
+  background: radial-gradient(circle at 30% 30%, rgba(184,155,94,.20), transparent 55%);
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events:none;
+}
+
+.project-card:hover{
+  transform: translateY(-4px);
+  border-left-color: rgba(18,63,51,.95);
+  border-color: rgba(18,63,51,.22);
+  box-shadow: 0 20px 55px rgba(14,20,18,.10);
+}
+
+.project-card:hover::after{
+  opacity: 1;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce){
+  .progress .bar{ transition: none !important; }
+  .hero-inner > *{ opacity: 1; transform: none; }
+  .js .hero-inner.is-in > *{ transition: none !important; }
+  .project-card, .project-card::after{ transition: none !important; }
+}
