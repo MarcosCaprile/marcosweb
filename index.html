@@ -426,19 +426,24 @@
   </footer>
   
   <script>
-    // (A) JS aktiv Flag (hast du im head — hier zur Sicherheit nicht nötig)
-    // document.documentElement.classList.add("js");
+    /* ===============================
+       Global JS Flag (für CSS Animations)
+    =============================== */
+    document.documentElement.classList.add("js");
   
-    // (2) Hero Intro trigger
+    /* ===============================
+       Hero Intro Animation
+    =============================== */
     window.addEventListener("load", () => {
       const heroInner = document.querySelector(".hero-inner");
       if (heroInner) {
-        // kleiner Delay, damit Layout fertig gerendert ist
         setTimeout(() => heroInner.classList.add("is-in"), 80);
       }
     });
   
-    // (4) Scroll Progress Bar
+    /* ===============================
+       Scroll Progress Bar
+    =============================== */
     const progressBar = document.getElementById("progressBar");
   
     function updateProgress(){
@@ -455,7 +460,74 @@
     window.addEventListener("scroll", updateProgress, { passive: true });
     window.addEventListener("load", updateProgress);
   
-    // (Reveal) Deine Reveal-Animationen
+    /* ===============================
+       Topbar show/hide after Hero
+    =============================== */
+    const hero = document.getElementById("hero");
+    const topbar = document.getElementById("topbar");
+  
+    function updateTopbar(){
+      if (!hero || !topbar) return;
+      const heroHeight = hero.offsetHeight;
+      if (window.scrollY > heroHeight - 100) topbar.classList.add("visible");
+      else topbar.classList.remove("visible");
+    }
+  
+    window.addEventListener("scroll", updateTopbar, { passive: true });
+    window.addEventListener("load", updateTopbar);
+  
+    /* ===============================
+       Mobile Menu Toggle
+    =============================== */
+    const menuBtn = document.getElementById("menuBtn");
+    const navLinks = document.getElementById("navLinks");
+  
+    if (menuBtn && navLinks){
+      menuBtn.addEventListener("click", () => {
+        const open = navLinks.classList.toggle("open");
+        menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        menuBtn.classList.toggle("open", open);
+      });
+  
+      navLinks.querySelectorAll("a").forEach(a => {
+        a.addEventListener("click", () => {
+          navLinks.classList.remove("open");
+          menuBtn.classList.remove("open");
+          menuBtn.setAttribute("aria-expanded", "false");
+  
+          // auch Projekte-Dropdown schließen
+          if (projectsDropdown && dropBtn){
+            projectsDropdown.classList.remove("open");
+            dropBtn.setAttribute("aria-expanded", "false");
+          }
+        });
+      });
+    }
+  
+    /* ===============================
+       Projekte Dropdown (Mobile Tap)
+    =============================== */
+    const projectsDropdown = document.getElementById("projectsDropdown");
+    const dropBtn = projectsDropdown ? projectsDropdown.querySelector(".dropbtn") : null;
+  
+    if (projectsDropdown && dropBtn) {
+      dropBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const isOpen = projectsDropdown.classList.toggle("open");
+        dropBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+  
+      projectsDropdown.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+          projectsDropdown.classList.remove("open");
+          dropBtn.setAttribute("aria-expanded", "false");
+        });
+      });
+    }
+  
+    /* ===============================
+       Scroll Reveal Animations
+    =============================== */
     window.addEventListener("load", () => {
       const els = document.querySelectorAll(".reveal, .stagger");
       if (!els.length) return;
@@ -476,7 +548,14 @@
   
       els.forEach(el => io.observe(el));
     });
+  
+    /* ===============================
+       Footer Year Auto-Update
+    =============================== */
+    const y = document.getElementById("y");
+    if (y) y.textContent = new Date().getFullYear();
   </script>
+
 
 
 
