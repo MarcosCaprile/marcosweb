@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Main Styles -->
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=999">
   
   <link rel="stylesheet" href="styles.css" />
 
@@ -416,6 +416,7 @@
   <script>
     // ===== Footer year (falls du es nutzt) =====
     document.documentElement.classList.add("js");
+    console.log("JS loaded ✅");
     const y = document.getElementById("y");
     if (y) y.textContent = new Date().getFullYear();
   
@@ -452,25 +453,37 @@
     }
   
     // ===== Scroll Reveal Animations =====
-    const revealEls = document.querySelectorAll(".reveal, .stagger");
-  
-    if (!("IntersectionObserver" in window)) {
-      revealEls.forEach(el => el.classList.add("in"));
-    } else {
-      const io = new IntersectionObserver((entries) => {
+    // ===== Scroll Reveal Animations (robust) =====
+    window.addEventListener("load", () => {
+      const revealEls = document.querySelectorAll(".reveal, .stagger");
+    
+      // Falls du aus Versehen nichts markiert hast:
+      if (!revealEls.length) {
+        console.warn("Keine .reveal oder .stagger Elemente gefunden.");
+        return;
+      }
+    
+      // Kein IO? Dann einfach alles einblenden
+      if (!("IntersectionObserver" in window)) {
+        revealEls.forEach(el => el.classList.add("in"));
+        return;
+      }
+    
+      const io = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add("in");
-            io.unobserve(entry.target);
+            obs.unobserve(entry.target);
           }
         });
       }, {
         threshold: 0.12,
-        rootMargin: "0px 0px -8% 0px"
+        rootMargin: "0px 0px -10% 0px"
       });
-  
+    
       revealEls.forEach(el => io.observe(el));
-    }
+    });
+
   </script>
 
 </body>
