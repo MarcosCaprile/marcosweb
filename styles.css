@@ -785,3 +785,10 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   50%  { transform: rotate(-45deg) translateY(8px); opacity:1; }
   100% { transform: rotate(-45deg) translateY(0); opacity:.55; }
 }
+
+.seo-name{
+  font-size:0;
+  opacity:0;
+  height:0;
+  overflow:hidden;
+}
