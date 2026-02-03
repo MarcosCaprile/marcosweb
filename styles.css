@@ -752,3 +752,31 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   .js .hero-inner.is-in > *{ transition: none !important; }
   .project-card, .project-card::after{ transition: none !important; }
 }
+
+/* ===== Hero Scroll Arrow ===== */
+
+.scroll-indicator{
+  position:absolute;
+  bottom:48px;
+  left:50%;
+  transform:translateX(-50%);
+  opacity:.7;
+}
+
+.arrow-down{
+  display:block;
+  width: 26px;
+  height: 26px;
+  border-left: 2px solid rgba(255,255,255,.85);
+  border-bottom: 2px solid rgba(255,255,255,.85);
+  transform: rotate(-45deg);
+  margin: 0 auto;
+  animation: arrowFloat 2.2s ease-in-out infinite;
+}
+
+/* sanftes Hoch-Runter-Wackeln */
+@keyframes arrowFloat{
+  0%   { transform: rotate(-45deg) translateY(0); opacity:.65; }
+  50%  { transform: rotate(-45deg) translateY(8px); opacity:1; }
+  100% { transform: rotate(-45deg) translateY(0); opacity:.65; }
+}
