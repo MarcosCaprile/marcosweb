@@ -427,49 +427,42 @@
   </footer>
   
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-    
-      /* Reveal Animation */
-      const revealEls = document.querySelectorAll(".reveal, .stagger");
-      revealEls.forEach(el => el.classList.add("in"));
-    
-      /* Hero Intro */
-      const heroInner = document.querySelector(".hero-inner");
-      if (heroInner) heroInner.classList.add("is-in");
-    
-      /* Topbar Show */
-      const hero = document.getElementById("hero");
-      const topbar = document.getElementById("topbar");
-      if (hero && topbar){
-        window.addEventListener("scroll", () => {
-          if (window.scrollY > hero.offsetHeight - 100) topbar.classList.add("visible");
-          else topbar.classList.remove("visible");
+    // Reveal + Stagger (scroll)
+    window.addEventListener("load", () => {
+      const els = document.querySelectorAll(".reveal, .stagger");
+      if (!els.length) return;
+  
+      // Fallback: nach kurzer Zeit alles einblenden (nie wieder "unsichtbar")
+      const safety = setTimeout(() => {
+        els.forEach(el => el.classList.add("in"));
+      }, 800);
+  
+      // Kein IntersectionObserver? Dann direkt animieren
+      if (!("IntersectionObserver" in window)) {
+        requestAnimationFrame(() => {
+          els.forEach(el => el.classList.add("in"));
+          clearTimeout(safety);
         });
+        return;
       }
-    
-      /* Mobile Menu */
-      const menuBtn = document.getElementById("menuBtn");
-      const navLinks = document.getElementById("navLinks");
-      if (menuBtn && navLinks){
-        menuBtn.addEventListener("click", () => {
-          const open = navLinks.classList.toggle("open");
-          menuBtn.setAttribute("aria-expanded", open);
+  
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            obs.unobserve(entry.target);
+          }
         });
-      }
-    
-      /* Dropdown */
-      const dropdown = document.getElementById("projectsDropdown");
-      const dropBtn = dropdown ? dropdown.querySelector(".dropbtn") : null;
-      if (dropdown && dropBtn){
-        dropBtn.addEventListener("click", (e)=>{
-          e.preventDefault();
-          dropdown.classList.toggle("open");
-        });
-      }
-    
+      }, { threshold: 0.12, rootMargin: "0px 0px -15% 0px" });
+  
+      // Wichtig: erst beobachten, dann im nächsten Frame laufen lassen
+      requestAnimationFrame(() => {
+        els.forEach(el => io.observe(el));
+      });
+  
+      // Wenn IO zumindest einmal läuft, kann Safety bleiben – schadet nicht.
     });
-    </script>
-
+  </script>
 
 </body>
 </html>
