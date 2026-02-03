@@ -753,37 +753,32 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   .project-card, .project-card::after{ transition: none !important; }
 }
 
-/* ===== Hero Scroll Arrow ===== */
+/* ===== Rolex-Style Scroll Indicator ===== */
 .scroll-indicator{
   position:absolute;
+  bottom:70px;              /* höher als vorher */
   left:50%;
-  bottom:34px;                 /* weiter unten */
   transform:translateX(-50%);
-  opacity:.75;
+  opacity:.6;
   pointer-events:none;
 }
 
-/* kleiner + clean */
+/* sehr feiner, kleiner Pfeil */
 .arrow-down{
   display:block;
-  width: 14px;                 /* kleiner */
-  height: 14px;                /* kleiner */
-  border-left: 2px solid rgba(255,255,255,.82);
-  border-bottom: 2px solid rgba(255,255,255,.82);
-
-  /* Rotation einmal fix setzen */
+  width:12px;
+  height:12px;
+  border-left:1.8px solid rgba(255,255,255,.75);
+  border-bottom:1.8px solid rgba(255,255,255,.75);
   transform: rotate(-45deg);
-
-  /* Nur Y-Animation, kein Kreis */
-  animation: arrowBounce 2.1s ease-in-out infinite;
-  will-change: transform;
+  animation: rolexArrow 2.4s ease-in-out infinite;
 }
 
-/* Nur translateY animieren, Rotation bleibt konstant */
-@keyframes arrowBounce{
-  0%   { transform: rotate(-45deg) translateY(0); opacity:.55; }
-  50%  { transform: rotate(-45deg) translateY(8px); opacity:1; }
-  100% { transform: rotate(-45deg) translateY(0); opacity:.55; }
+/* ganz dezente Bewegung, kein Kreis */
+@keyframes rolexArrow{
+  0%   { transform: rotate(-45deg) translateY(0); opacity:.45; }
+  50%  { transform: rotate(-45deg) translateY(6px); opacity:1; }
+  100% { transform: rotate(-45deg) translateY(0); opacity:.45; }
 }
 
 .seo-name{
