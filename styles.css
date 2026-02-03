@@ -771,6 +771,7 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   border-left:1.8px solid rgba(255,255,255,.75);
   border-bottom:1.8px solid rgba(255,255,255,.75);
   animation: rolexArrow 2.4s ease-in-out infinite;
+  transform: rotate(-45deg);
 }
 
 /* ganz dezente Bewegung, kein Kreis */
