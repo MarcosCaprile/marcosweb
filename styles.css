@@ -770,15 +770,14 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   height:12px;
   border-left:1.8px solid rgba(255,255,255,.75);
   border-bottom:1.8px solid rgba(255,255,255,.75);
-  transform: rotate(-45deg);
   animation: rolexArrow 2.4s ease-in-out infinite;
 }
 
 /* ganz dezente Bewegung, kein Kreis */
 @keyframes rolexArrow{
-  0%   { transform: rotate(-45deg) translateY(0); opacity:.45; }
-  50%  { transform: rotate(-45deg) translateY(6px); opacity:1; }
-  100% { transform: rotate(-45deg) translateY(0); opacity:.45; }
+  0%   { translateY(0); opacity:.45; }
+  50%  { translateY(6px); opacity:1; }
+  100% { translateY(0); opacity:.45; }
 }
 
 .seo-name{
