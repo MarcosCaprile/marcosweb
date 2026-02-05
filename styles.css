@@ -557,6 +557,41 @@ dd{margin:0}
   .dropdown:hover .dropmenu{ display: block; }
   .dropdown:hover .chev{ transform: rotate(225deg); }
 }
+@media (max-width: 720px){
+  /* Dropdown soll im mobilen Menü wie ein normaler Block wirken */
+  .dropdown{
+    width: 100%;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .dropbtn{
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px 10px;
+    border-radius: 12px;
+  }
+
+  /* Wichtig: kein absolute positioning auf Mobile */
+  .dropmenu{
+    position: static;
+    width: 100%;
+    min-width: 0;
+    margin-top: 8px;
+    display: none;
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .dropdown.open .dropmenu{
+    display: block;
+  }
+
+  .dropmenu a{
+    padding: 10px 10px;
+  }
+}
 
 /* Mobile JS open */
 .dropdown.open .dropmenu{ display: block; }
