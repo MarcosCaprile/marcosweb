@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Universe Simulator · Marcos Caprile-Santos</title>
+  <meta name="description" content="Universe Simulator (Showcase) – interaktives 3D-Sonnensystem mit Zoom, Rotation, Speed und Follow-Body." />
+  <link rel="canonical" href="https://marcos.caprile.net/projects/universe.html" />
+
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/styles.css?v=999" />
+
+  <!-- tiny SEO hint -->
+  <meta name="robots" content="index, follow" />
+</head>
+
+<body>
+  <!-- Topbar (auf Projektseiten immer sichtbar) -->
+  <nav class="topbar visible" id="topbar">
+    <div class="wrap nav-inner">
+      <a class="logo" href="/#hero" aria-label="Home">MCS</a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Menü öffnen" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="/#about">Über mich</a>
+        <a href="/#cv">Lebenslauf</a>
+
+        <!-- Projekte Dropdown (Desktop hover / Mobile tap) -->
+        <div class="dropdown" id="projectsDropdown">
+          <button class="dropbtn" aria-expanded="false">
+            Projekte <span class="chev"></span>
+          </button>
+          <div class="dropmenu" role="menu" aria-label="Projekte">
+            <a href="/projects/studyconnect.html">StudyConnect</a>
+            <a href="/projects/newton.html">N.E.W.T.O.N.</a>
+            <a href="/projects/thoughtra.html">Thoughtra</a>
+            <a href="/projects/impostor-games.html">Impostor Games</a>
+            <a href="/projects/securescreen.html">SecureScreen SDK</a>
+            <div class="dropsep"></div>
+            <a href="/projects/universe.html" aria-current="page">Universe Simulator</a>
+          </div>
+        </div>
+
+        <a href="/#activities">Activities</a>
+        <a href="/#qa">Fragebogen</a>
+        <a href="/#social">Social</a>
+        <a href="/#contact">Kontakt</a>
+        <a href="/impressum.html">Impressum</a>
+        <a href="/datenschutz.html">Datenschutz</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section class="card reveal">
+      <h2>Universe Simulator</h2>
+      <p class="muted">
+        Showcase eines interaktiven 3D-Sonnensystems: Sterne, Orbits, Zeitlauf, Speed-Slider und “Follow-Body”.
+        (Visual Simulator – keine Veröffentlichung der vollständigen Physik-Details.)
+      </p>
+    </section>
+
+    <section class="card reveal">
+      <div class="universe">
+        <div class="universe-top">
+          <div class="universe-title">
+            <h3 class="mini" style="margin:0">Interactive 3D Showcase</h3>
+            <div class="universe-time" id="timeLabel">t = 0.00 Jahre (0 Tage)</div>
+          </div>
+
+          <div class="universe-controls">
+            <label class="u-field">
+              <span>Tage / Schritt</span>
+              <input id="speed" type="range" min="0.1" max="50" step="0.1" value="1.0" />
+              <b id="speedVal">1.0</b>
+            </label>
+
+            <label class="u-field">
+              <span>Follow</span>
+              <select id="follow">
+                <option value="none">Keiner</option>
+                <option value="Merkur">Merkur</option>
+                <option value="Venus">Venus</option>
+                <option value="Erde">Erde</option>
+                <option value="Mond">Mond</option>
+                <option value="ISS">ISS</option>
+                <option value="GPS-1">GPS-1</option>
+                <option value="Starlink-1">Starlink-1</option>
+                <option value="Mars">Mars</option>
+                <option value="Jupiter">Jupiter</option>
+                <option value="Saturn">Saturn</option>
+                <option value="Uranus">Uranus</option>
+                <option value="Neptun">Neptun</option>
+              </select>
+            </label>
+
+            <button class="u-btn" id="resetView" type="button">Reset View</button>
+          </div>
+        </div>
+
+        <div class="universe-canvas" id="sceneWrap" aria-label="Universe Simulator Canvas"></div>
+
+        <div class="universe-foot muted">
+          <span>Drag = Rotate</span> · <span>Wheel = Zoom</span> · <span>Right click = Pan</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card reveal">
+      <h3 class="mini">Was hier drin steckt</h3>
+      <ul class="bullets">
+        <li>3D-Sonnensystem + Sterne-Hintergrund</li>
+        <li>Planetengrößen skaliert (komprimiert, damit alles sichtbar bleibt)</li>
+        <li>Elliptische Orbits (dashed) wie im Original-Projekt</li>
+        <li>Speed-Slider (Tage pro Schritt)</li>
+        <li>Follow-Body (Kamera folgt sanft einem Objekt)</li>
+      </ul>
+
+      <p class="fine"><a href="/#projects">← zurück zur Startseite</a></p>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p>© <span id="y"></span> Marcos Caprile-Santos</p>
+    <p class="fine"><a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a></p>
+  </footer>
+
+  <!-- THREE.JS (CDN) -->
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+    import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+
+    // ===== Basics / UI =====
+    document.documentElement.classList.add("js");
+    const y = document.getElementById("y"); if (y) y.textContent = new Date().getFullYear();
+
+    const speed = document.getElementById("speed");
+    const speedVal = document.getElementById("speedVal");
+    const followSel = document.getElementById("follow");
+    const timeLabel = document.getElementById("timeLabel");
+    const resetBtn = document.getElementById("resetView");
+
+    speed.addEventListener("input", () => speedVal.textContent = Number(speed.value).toFixed(1));
+
+    // Mobile menu
+    const menuBtn = document.getElementById("menuBtn");
+    const navLinks = document.getElementById("navLinks");
+    if (menuBtn && navLinks) {
+      menuBtn.addEventListener("click", () => {
+        const open = navLinks.classList.toggle("open");
+        menuBtn.classList.toggle("open", open);
+        menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
+
+    // Dropdown (mobile tap)
+    const dd = document.getElementById("projectsDropdown");
+    const ddBtn = dd ? dd.querySelector(".dropbtn") : null;
+    if (dd && ddBtn) {
+      ddBtn.addEventListener("click", (e) => {
+        // nur mobile: auf Desktop hover geregelt
+        if (window.matchMedia("(max-width: 720px)").matches) {
+          e.preventDefault();
+          const open = dd.classList.toggle("open");
+          ddBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+      });
+    }
+
+    // ===== Scene setup =====
+    const wrap = document.getElementById("sceneWrap");
+    const scene = new THREE.Scene();
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    wrap.appendChild(renderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(55, wrap.clientWidth / wrap.clientHeight, 0.01, 2000);
+    camera.position.set(0, 18, 52);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 6;
+    controls.maxDistance = 260;
+
+    // Lights
+    const amb = new THREE.AmbientLight(0xffffff, 0.35);
+    scene.add(amb);
+
+    const sunLight = new THREE.PointLight(0xfff3c4, 2.1, 0, 1.3);
+    sunLight.position.set(0, 0, 0);
+    scene.add(sunLight);
+
+    // ===== Stars background =====
+    const starCount = 1200;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      // shell distribution (like your python)
+      const r = 90 + Math.random() * 70;
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+      starPos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+      starPos[i * 3 + 1] = r * Math.cos(phi);
+      starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.6, transparent: true, opacity: 0.55 });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // ===== Helpers =====
+    const AU_SCALE = 1.0; // 1 AU = 1 unit (like your plot)
+    const DAY_IN_YEARS = 1 / 365.25;
+
+    // compressed marker size like your function (not real scale, but "feels right")
+    const sizeFromRadius = (rEarth = 6371, rKm = 6371, isSun = false) => {
+      const rel = Math.max(rKm / rEarth, 0.00001);
+      let s = 0.45 * Math.pow(rel, 0.3);
+      if (isSun) s *= 1.6;
+      return THREE.MathUtils.clamp(s, 0.18, 1.2);
+    };
+
+    const makeSphere = (color, radius) => {
+      const geo = new THREE.SphereGeometry(radius, 32, 22);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.7,
+        metalness: 0.05,
+        emissive: new THREE.Color(0x000000)
+      });
+      return new THREE.Mesh(geo, mat);
+    };
+
+    // Orbit line (dashed ellipse, z=0)
+    const makeOrbit = (a, e, color) => {
+      const pts = [];
+      const seg = 420;
+      for (let i = 0; i <= seg; i++) {
+        const t = (i / seg) * Math.PI * 2;
+        const x = (a * Math.cos(t) - a * e) * AU_SCALE;
+        const y = (a * Math.sin(t) * Math.sqrt(1 - e * e)) * AU_SCALE;
+        pts.push(new THREE.Vector3(x, 0, y));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = new THREE.LineDashedMaterial({ color, dashSize: 0.9, gapSize: 0.55, transparent: true, opacity: 0.35 });
+      const line = new THREE.Line(geo, mat);
+      line.computeLineDistances();
+      return line;
+    };
+
+    // Kepler-ish motion (showcase)
+    const bodyDefs = [
+      { name: "Sonne",   color: 0xffd24a, rKm: 695700, a: null, e: 0,    periodY: 0,    isSun: true },
+
+      { name: "Merkur",  color: 0xa8a8a8, rKm: 2439.7, a: 0.387,  e: 0.2056, periodY: 0.241 },
+      { name: "Venus",   color: 0xffa24a, rKm: 6051.8, a: 0.723,  e: 0.0068, periodY: 0.615 },
+      { name: "Erde",    color: 0x3aa8ff, rKm: 6371.0, a: 1.000,  e: 0.0167, periodY: 1.000 },
+      { name: "Mars",    color: 0xff3a2f, rKm: 3389.5, a: 1.524,  e: 0.0934, periodY: 1.881 },
+
+      { name: "Jupiter", color: 0xd9a06a, rKm: 69911,  a: 5.203,  e: 0.0489, periodY: 11.86 },
+      { name: "Saturn",  color: 0xd7b05a, rKm: 58232,  a: 9.537,  e: 0.0542, periodY: 29.46 },
+      { name: "Uranus",  color: 0x6fe7ff, rKm: 25362,  a: 19.191, e: 0.0472, periodY: 84.01 },
+      { name: "Neptun",  color: 0x7a4dff, rKm: 24622,  a: 30.07,  e: 0.0086, periodY: 164.8 },
+    ];
+
+    const bodies = new Map();
+
+    // Sun
+    for (const def of bodyDefs) {
+      const radius = sizeFromRadius(6371, def.rKm, !!def.isSun);
+      const mesh = makeSphere(def.color, radius);
+      mesh.name = def.name;
+      if (def.isSun) {
+        mesh.material.emissive = new THREE.Color(0xffc85a);
+        mesh.material.emissiveIntensity = 0.6;
+      }
+      scene.add(mesh);
+
+      bodies.set(def.name, { def, mesh, theta: Math.random() * Math.PI * 2 });
+      if (def.a) scene.add(makeOrbit(def.a, def.e, def.color));
+    }
+
+    // Moon + satellites around Earth (visual)
+    const earth = bodies.get("Erde");
+    const moonMesh = makeSphere(0xd0d0d0, 0.22);
+    moonMesh.name = "Mond";
+    scene.add(moonMesh);
+
+    const issMesh = makeSphere(0xffffff, 0.12);
+    issMesh.name = "ISS";
+    scene.add(issMesh);
+
+    const gpsMesh = makeSphere(0x46ff6a, 0.11);
+    gpsMesh.name = "GPS-1";
+    scene.add(gpsMesh);
+
+    const starlinkMesh = makeSphere(0x6fe7ff, 0.10);
+    starlinkMesh.name = "Starlink-1";
+    scene.add(starlinkMesh);
+
+    bodies.set("Mond", { def: { name: "Mond" }, mesh: moonMesh, theta: 0 });
+    bodies.set("ISS", { def: { name: "ISS" }, mesh: issMesh, theta: 0 });
+    bodies.set("GPS-1", { def: { name: "GPS-1" }, mesh: gpsMesh, theta: 1.1 });
+    bodies.set("Starlink-1", { def: { name: "Starlink-1" }, mesh: starlinkMesh, theta: 2.2 });
+
+    // ===== Simulation state =====
+    let simTimeYears = 0;
+
+    const updateTimeLabel = () => {
+      const days = simTimeYears * 365.25;
+      timeLabel.textContent = `t = ${simTimeYears.toFixed(2)} Jahre (${Math.round(days)} Tage)`;
+    };
+
+    // Follow
+    let followName = "none";
+    followSel.addEventListener("change", () => { followName = followSel.value; });
+
+    const resetView = () => {
+      followName = "none";
+      followSel.value = "none";
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 18, 52);
+      controls.update();
+    };
+    resetBtn.addEventListener("click", resetView);
+
+    // ===== Animate =====
+    const clock = new THREE.Clock();
+
+    function tick() {
+      const dt = clock.getDelta();
+      const daysPerStep = Number(speed.value);
+      const stepYears = daysPerStep * DAY_IN_YEARS * (dt * 30); // dt*30 => smooth but visible speed
+      simTimeYears += stepYears;
+
+      // Planets (elliptic param motion)
+      for (const [name, obj] of bodies.entries()) {
+        const { def, mesh } = obj;
+        if (!def.a) continue; // skip sun + satellites/moon (handled later)
+
+        // angular speed
+        const w = (2 * Math.PI) / def.periodY;
+        obj.theta += w * stepYears;
+
+        // ellipse in xz-plane with focus shift like python orbit plot
+        const a = def.a * AU_SCALE;
+        const e = def.e;
+        const x = (a * Math.cos(obj.theta) - a * e);
+        const z = (a * Math.sin(obj.theta) * Math.sqrt(1 - e * e));
+
+        mesh.position.set(x, 0, z);
+      }
+
+      // Earth-centered moon & satellites (visual, not full N-body)
+      if (earth) {
+        const ex = earth.mesh.position.x;
+        const ez = earth.mesh.position.z;
+
+        // Moon radius in AU ~ 0.00257
+        const rMoon = 0.00257 * AU_SCALE;
+        bodies.get("Mond").theta += (2 * Math.PI / 0.0748) * stepYears; // ~27.3 days = 0.0748 years
+        const mt = bodies.get("Mond").theta;
+        moonMesh.position.set(ex + rMoon * Math.cos(mt), 0, ez + rMoon * Math.sin(mt));
+
+        // ISS ~ 420km altitude (very tiny)
+        const rISS = 0.000045 * AU_SCALE;
+        bodies.get("ISS").theta += (2 * Math.PI / 0.00106) * stepYears; // fast
+        const it = bodies.get("ISS").theta;
+        issMesh.position.set(ex + rISS * Math.cos(it), 0, ez + rISS * Math.sin(it));
+
+        // GPS
+        const rGPS = 0.000178 * AU_SCALE;
+        bodies.get("GPS-1").theta += (2 * Math.PI / 0.5) * stepYears;
+        const gt = bodies.get("GPS-1").theta;
+        gpsMesh.position.set(ex + rGPS * Math.cos(gt), 0, ez + rGPS * Math.sin(gt));
+
+        // Starlink (inclination visual)
+        const rSL = 0.000055 * AU_SCALE;
+        bodies.get("Starlink-1").theta += (2 * Math.PI / 0.08) * stepYears;
+        const st = bodies.get("Starlink-1").theta;
+        const inc = THREE.MathUtils.degToRad(53);
+        const y = Math.sin(st) * Math.sin(inc) * rSL;
+        starlinkMesh.position.set(ex + rSL * Math.cos(st), y, ez + rSL * Math.sin(st) * Math.cos(inc));
+      }
+
+      // Follow camera target
+      if (followName !== "none" && bodies.has(followName)) {
+        const p = bodies.get(followName).mesh.position;
+        controls.target.lerp(p, 0.08);
+      }
+
+      updateTimeLabel();
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+
+    updateTimeLabel();
+    tick();
+
+    // Resize
+    const onResize = () => {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener("resize", onResize);
+
+    // Reveal (optional, falls du es nutzt)
+    window.addEventListener("load", () => {
+      document.documentElement.classList.add("reveal-on");
+      const els = document.querySelectorAll(".reveal, .stagger");
+      if (!("IntersectionObserver" in window)) {
+        els.forEach(el => el.classList.add("in"));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add("in"); obs.unobserve(e.target); }
+        });
+      }, { threshold: 0.18, rootMargin: "0px 0px -12% 0px" });
+      els.forEach(el => io.observe(el));
+    });
+  </script>
+</body>
+</html>
