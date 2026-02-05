@@ -538,6 +538,19 @@
       });
     
     })();
+    // --- Mobile Menu hard-fix ---
+    window.addEventListener("load", () => {
+      const menuBtn = document.getElementById("menuBtn");
+      const navLinks = document.getElementById("navLinks");
+      if (!menuBtn || !navLinks) return;
+    
+      menuBtn.addEventListener("click", () => {
+        const open = navLinks.classList.toggle("open");
+        menuBtn.classList.toggle("open", open);
+        menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      }, { passive: true });
+    });
+
   </script>
 
 
