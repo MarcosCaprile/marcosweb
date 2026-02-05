@@ -826,9 +826,7 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   overflow:hidden;
 }
 
-/* ===========================
-   Universe Simulator (Showcase)
-   =========================== */
+/* ===== Universe Simulator (Project Page) ===== */
 .universe{
   display:flex;
   flex-direction:column;
@@ -838,100 +836,112 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
 .universe-top{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
   gap: 16px;
-  flex-wrap:wrap;
+  align-items:flex-end;
+  flex-wrap: wrap;
+}
+
+.universe-title{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
 }
 
 .universe-time{
-  margin-top: 8px;
-  font-weight: 700;
-  letter-spacing:.02em;
-  color: rgba(18,63,51,.92);
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(14,20,18,.62);
+  font-weight: 650;
 }
 
 .universe-controls{
   display:flex;
   gap: 12px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
   align-items:flex-end;
+  flex-wrap: wrap;
+  justify-content:flex-end;
 }
 
 .u-field{
   display:flex;
   flex-direction:column;
   gap: 8px;
-  min-width: 180px;
-  font-size: 12px;
-  letter-spacing:.14em;
+  min-width: 190px;
+}
+
+.u-field span{
+  font-size: 11px;
+  letter-spacing: .18em;
   text-transform: uppercase;
   color: rgba(14,20,18,.60);
-  font-weight: 800;
-}
-
-.u-field input[type="range"]{
-  width: 220px;
-}
-
-.u-field select{
-  width: 220px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(14,20,18,.10);
-  background: rgba(255,255,255,.85);
-  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-weight: 650;
-  color: rgba(14,20,18,.80);
+  font-weight: 750;
 }
 
 .u-field b{
   font-size: 12px;
-  letter-spacing: 0;
-  text-transform:none;
   color: rgba(18,63,51,.95);
 }
 
-.u-btn{
-  border: 1px solid rgba(184,155,94,.22);
-  background: rgba(14,20,18,.92);
-  color: rgba(255,255,255,.88);
+.u-field input[type="range"]{
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+.u-field select{
+  width: 100%;
+  padding: 10px 12px;
   border-radius: 14px;
-  padding: 10px 14px;
-  cursor: pointer;
+  border: 1px solid rgba(14,20,18,.12);
+  background: rgba(255,255,255,.9);
+  font-family: inherit;
+  color: var(--dark);
+  outline: none;
+}
+
+.u-btn{
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(184,155,94,.35);
+  background: rgba(184,155,94,.14);
+  color: rgba(14,20,18,.92);
   font-weight: 750;
-  letter-spacing:.10em;
-  text-transform: uppercase;
-  font-size: 12px;
+  cursor: pointer;
 }
 
 .u-btn:hover{
-  background: rgba(14,20,18,.98);
-  color: #fff;
+  background: rgba(184,155,94,.22);
 }
 
+/* Canvas area (WICHTIG: Höhe geben!) */
 .universe-canvas{
-  width: 100%;
-  height: 520px;
-  border-radius: 18px;
-  border: 1px solid rgba(14,20,18,.10);
-  background: radial-gradient(1200px 520px at 30% 10%, rgba(184,155,94,.08), transparent 55%),
-              radial-gradient(900px 520px at 80% 10%, rgba(18,63,51,.10), transparent 60%),
-              rgba(14,20,18,.92);
-  overflow:hidden;
-  box-shadow: 0 22px 60px rgba(14,20,18,.10);
+  height: 560px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(14,20,18,.12);
+  box-shadow: 0 18px 50px rgba(14,20,18,.08);
 }
 
+/* Canvas fill */
+.universe-canvas canvas{
+  display:block;
+  width:100% !important;
+  height:100% !important;
+}
+
+/* Footer hint */
 .universe-foot{
-  display:flex;
-  gap: 12px;
-  flex-wrap:wrap;
   font-size: 13px;
+  text-align:center;
 }
 
+/* Mobile */
 @media (max-width: 720px){
-  .u-field input[type="range"],
-  .u-field select{ width: 100%; }
+  .universe-canvas{ height: 420px; }
+  .u-field{ min-width: 160px; }
+}
+
 
   .universe-canvas{ height: 420px; }
   .universe-controls{ justify-content:flex-start; }
