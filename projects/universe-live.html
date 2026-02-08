@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Universe Simulator (Full) · Marcos Caprile-Santos</title>
-  <meta name="description" content="Universe Simulator – Full Version (Visual Simulator): rotate, zoom, speed, follow." />
+  <meta name="description" content="Universe Simulator (Full) – N-Body Visual Simulator (Velocity-Verlet), Sterne, Orbits, Zoom, Speed, Follow." />
   <link rel="canonical" href="https://marcos.caprile.net/projects/universe-live.html" />
   <meta name="robots" content="index, follow" />
 
@@ -17,6 +17,7 @@
 </head>
 
 <body>
+  <!-- Topbar (immer sichtbar) -->
   <nav class="topbar visible" id="topbar">
     <div class="wrap nav-inner">
       <a class="logo" href="/#hero" aria-label="Home">MCS</a>
@@ -57,20 +58,19 @@
     <section class="card reveal">
       <h2>Universe Simulator · Full Version</h2>
       <p class="muted">
-        Visual Simulator (Canvas) – stabil auf allen Geräten.  
-        Drag = Rotate · Wheel/Pinch = Zoom · Follow = Kamera folgt
+        Browser-Umsetzung deines Python-Projekts: <b>N-Body</b> (Velocity-Verlet), Sterne, Orbits, Zoom, Speed, Follow.
       </p>
     </section>
 
     <section class="card reveal">
-      <div class="universe-ui">
-        <div class="universe-ui-top">
-          <div class="universe-ui-title">
-            <h3 class="mini" style="margin:0">Interactive Showcase</h3>
-            <div class="universe-ui-time" id="timeLabel">t = 0.00 Jahre (0 Tage)</div>
+      <div class="universe">
+        <div class="universe-top">
+          <div class="universe-title">
+            <h3 class="mini" style="margin:0">Interactive 3D Simulator</h3>
+            <div class="universe-time" id="timeLabel">t = 0.00 Jahre (0 Tage)</div>
           </div>
 
-          <div class="universe-ui-controls">
+          <div class="universe-controls">
             <label class="u-field">
               <span>Tage / Schritt</span>
               <input id="speed" type="range" min="0.1" max="50" step="0.1" value="1.0" />
@@ -85,6 +85,9 @@
                 <option value="Venus">Venus</option>
                 <option value="Erde">Erde</option>
                 <option value="Mond">Mond</option>
+                <option value="ISS">ISS</option>
+                <option value="GPS-1">GPS-1</option>
+                <option value="Starlink-1">Starlink-1</option>
                 <option value="Mars">Mars</option>
                 <option value="Jupiter">Jupiter</option>
                 <option value="Saturn">Saturn</option>
@@ -97,12 +100,11 @@
           </div>
         </div>
 
-        <div class="universe-canvas-2d">
-          <canvas id="cv"></canvas>
-        </div>
+        <!-- WICHTIG: Diese Box bekommt feste Höhe per CSS -->
+        <div class="universe-canvas" id="sceneWrap" aria-label="Universe Simulator Canvas"></div>
 
-        <div class="universe-ui-foot muted">
-          <span>Drag = Rotate</span> · <span>Wheel = Zoom</span>
+        <div class="universe-foot muted">
+          <span>Drag = Rotate</span> · <span>Wheel = Zoom</span> · <span>Right click = Pan</span>
         </div>
       </div>
     </section>
@@ -116,11 +118,13 @@
     <p>© <span id="y"></span> Marcos Caprile-Santos</p>
   </footer>
 
-  <script>
-    // ===== basics =====
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+    import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+
+    // ===== Basics =====
     document.documentElement.classList.add("js");
-    const y = document.getElementById("y");
-    if (y) y.textContent = new Date().getFullYear();
+    const y = document.getElementById("y"); if (y) y.textContent = new Date().getFullYear();
 
     // Mobile menu
     const menuBtn = document.getElementById("menuBtn");
@@ -155,316 +159,296 @@
 
     speed.addEventListener("input", () => speedVal.textContent = Number(speed.value).toFixed(1));
 
-    // ===== Canvas pseudo-3D engine =====
-    const canvas = document.getElementById("cv");
-    const ctx = canvas.getContext("2d");
+    // ===== N-Body Physics (wie dein Python: AU / Jahre / Sonnenmassen) =====
+    const G = 4 * Math.PI * Math.PI;           // 4π²
+    const DAY_IN_YEARS = 1 / 365.25;
+    let simTime = 0;
 
-    let W = 0, H = 0;
-    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    // helper: vector ops
+    const v3 = (x=0,y=0,z=0)=>({x,y,z});
+    const add = (a,b)=>v3(a.x+b.x,a.y+b.y,a.z+b.z);
+    const sub = (a,b)=>v3(a.x-b.x,a.y-b.y,a.z-b.z);
+    const mul = (a,k)=>v3(a.x*k,a.y*k,a.z*k);
+    const len = (a)=>Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
 
-    function resize(){
-      const box = canvas.getBoundingClientRect();
-      W = Math.max(1, Math.floor(box.width));
-      H = Math.max(1, Math.floor(box.height));
-      canvas.width  = Math.floor(W * DPR);
-      canvas.height = Math.floor(H * DPR);
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    class Body {
+      constructor({name, mass, a=null, e=0, color=0xffffff, radiusKm=0, isSun=false}) {
+        this.name=name;
+        this.mass=mass;
+        this.a=a; this.e=e;
+        this.color=color;
+        this.radiusKm=radiusKm;
+        this.isSun=isSun;
+
+        this.pos=v3(0,0,0);
+        this.vel=v3(0,0,0);
+        this.acc=v3(0,0,0);
+      }
     }
 
-    // camera / controls
-    let rotX = 0.55;       // tilt
-    let rotY = 0.85;       // yaw
-    let zoom = 1.0;
+    // Radien (km)
+    const R_EARTH=6371.0;
+    const AU_IN_KM=1.496e8;
 
-    let dragging = false;
-    let lastX = 0, lastY = 0;
-
-    canvas.addEventListener("pointerdown", (e)=>{
-      dragging = true;
-      lastX = e.clientX; lastY = e.clientY;
-      canvas.setPointerCapture(e.pointerId);
-    });
-
-    canvas.addEventListener("pointermove", (e)=>{
-      if(!dragging) return;
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      lastX = e.clientX; lastY = e.clientY;
-
-      rotY += dx * 0.006;
-      rotX += dy * 0.006;
-      rotX = Math.max(0.15, Math.min(1.25, rotX));
-    });
-
-    canvas.addEventListener("pointerup", ()=> dragging=false);
-    canvas.addEventListener("pointercancel", ()=> dragging=false);
-
-    canvas.addEventListener("wheel", (e)=>{
-      e.preventDefault();
-      const s = e.deltaY > 0 ? 1.08 : 0.92;
-      zoom *= s;
-      zoom = Math.max(0.55, Math.min(2.2, zoom));
-    }, { passive:false });
-
-    function rot(v){
-      // rotate around Y then X
-      const cy = Math.cos(rotY), sy = Math.sin(rotY);
-      const cx = Math.cos(rotX), sx = Math.sin(rotX);
-
-      // y-rotation
-      let x = v.x * cy + v.z * sy;
-      let z = -v.x * sy + v.z * cy;
-      let y = v.y;
-
-      // x-rotation
-      let y2 = y * cx - z * sx;
-      let z2 = y * sx + z * cx;
-
-      return {x, y:y2, z:z2};
+    function markerSizeFromRadiusKm(rKm, isSun=false){
+      if (!rKm || rKm<=0) return 0.25;
+      const rel = rKm / R_EARTH;
+      let size = 0.45 * Math.pow(rel, 0.3);
+      if (isSun) size *= 1.6;
+      return Math.min(1.25, Math.max(0.18, size));
     }
 
-    function project(v){
-      const p = rot(v);
-      const fov = 260; // pseudo perspective
-      const s = fov / (fov + p.z);
-      return {
-        x: (p.x * s),
-        y: (p.y * s),
-        z: p.z,
-        s
-      };
-    }
+    // Bodies (Massen in Sonnenmassen, a,e wie im Python)
+    const bodies = [];
 
-    // system data (showcase-like)
-    const bodies = [
-      {name:"Sonne",   a:0,      e:0,      period:1,     color:"#ffd24a", r:10},
-      {name:"Merkur",  a:40,     e:0.21,   period:0.241, color:"#a8a8a8", r:3},
-      {name:"Venus",   a:58,     e:0.007,  period:0.615, color:"#ffa24a", r:4},
-      {name:"Erde",    a:80,     e:0.017,  period:1.0,   color:"#3aa8ff", r:4},
-      {name:"Mars",    a:105,    e:0.093,  period:1.881, color:"#ff3a2f", r:3.5},
-      {name:"Jupiter", a:180,    e:0.049,  period:11.86, color:"#d9a06a", r:7},
-      {name:"Saturn",  a:230,    e:0.054,  period:29.46, color:"#d7b05a", r:6.5},
-      {name:"Uranus",  a:300,    e:0.047,  period:84.01, color:"#6fe7ff", r:5.5},
-      {name:"Neptun",  a:360,    e:0.009,  period:164.8, color:"#7a4dff", r:5.5},
+    const sun = new Body({name:"Sonne", mass:1.0, a:null, e:0, color:0xffd24a, radiusKm:695700, isSun:true});
+    bodies.push(sun);
+
+    const defs = [
+      {name:"Merkur",  mass:1.651e-7, a:0.387,  e:0.2056, color:0xa8a8a8, radiusKm:2439.7},
+      {name:"Venus",   mass:2.447e-6, a:0.723,  e:0.0068, color:0xffa24a, radiusKm:6051.8},
+      {name:"Erde",    mass:3.003e-6, a:1.000,  e:0.0167, color:0x3aa8ff, radiusKm:6371.0},
+      {name:"Mars",    mass:3.227e-7, a:1.524,  e:0.0934, color:0xff3a2f, radiusKm:3389.5},
+      {name:"Jupiter", mass:9.545e-4, a:5.203,  e:0.0489, color:0xd9a06a, radiusKm:69911},
+      {name:"Saturn",  mass:2.858e-4, a:9.537,  e:0.0542, color:0xd7b05a, radiusKm:58232},
+      {name:"Uranus",  mass:4.366e-5, a:19.191, e:0.0472, color:0x6fe7ff, radiusKm:25362},
+      {name:"Neptun",  mass:5.151e-5, a:30.07,  e:0.0086, color:0x7a4dff, radiusKm:24622},
     ];
 
-    // angles
-    for(const b of bodies) b.t = Math.random() * Math.PI * 2;
-
-    let simYears = 0;
-
-    function drawStars(){
-      // deterministic-ish stars
-      ctx.save();
-      ctx.globalAlpha = 0.55;
-      ctx.fillStyle = "rgba(255,255,255,.75)";
-      for(let i=0;i<420;i++){
-        const x = (Math.sin(i*999) * 0.5 + 0.5) * W;
-        const y = (Math.cos(i*777) * 0.5 + 0.5) * H;
-        ctx.fillRect(x, y, 1, 1);
-      }
-      ctx.restore();
+    for(const d of defs){
+      const b = new Body(d);
+      // Start im Perihel (wie Python)
+      const rPeri = d.a * (1 - d.e);
+      b.pos = v3(rPeri, 0, 0);
+      const vPeri = Math.sqrt(G * (1 + d.e) / (d.a * (1 - d.e)));
+      b.vel = v3(0, vPeri, 0);
+      bodies.push(b);
     }
 
-    function draw(){
-      // background
-      ctx.clearRect(0,0,W,H);
-      // deep space panel feel
-      ctx.fillStyle = "rgba(14,20,18,.96)";
-      ctx.fillRect(0,0,W,H);
-      drawStars();
+    // Earth ref
+    const earth = bodies.find(b=>b.name==="Erde");
 
-      const cx = W/2, cy = H/2;
+    // Mond wie Python (um Erde)
+    const M_MOND = earth.mass * 0.0123;
+    const moon = new Body({name:"Mond", mass:M_MOND, a:null, e:0, color:0xd0d0d0, radiusKm:1737.4});
+    const rMoonAu = 384400.0 / AU_IN_KM;
+    moon.pos = add(earth.pos, v3(rMoonAu,0,0));
+    const GM_earth = G * earth.mass;
+    const vMoonRel = Math.sqrt(GM_earth / rMoonAu);
+    moon.vel = add(earth.vel, v3(0, vMoonRel, 0));
+    bodies.push(moon);
 
-      // scale based on zoom + fit
-      const scale = zoom * Math.min(W, H) / 900;
+    // Satelliten (extrem kleine Massen)
+    const iss = new Body({name:"ISS", mass:2e-25, a:null, e:0, color:0xffffff, radiusKm:50});
+    const gps = new Body({name:"GPS-1", mass:1e-26, a:null, e:0, color:0x46ff6a, radiusKm:50});
+    const starlink = new Body({name:"Starlink-1", mass:1e-27, a:null, e:0, color:0x6fe7ff, radiusKm:40});
 
-      // compute positions
-      const points = [];
+    const rIssAu = (R_EARTH + 420.0) / AU_IN_KM;
+    const rGpsAu = (R_EARTH + 20200.0) / AU_IN_KM;
+    const rSlAu  = (R_EARTH + 550.0) / AU_IN_KM;
 
-      // find earth for moon
-      let earthPos = null;
+    const vIssRel = Math.sqrt(GM_earth / rIssAu);
+    const vGpsRel = Math.sqrt(GM_earth / rGpsAu);
+    const vSlRel  = Math.sqrt(GM_earth / rSlAu);
 
+    iss.pos = add(earth.pos, v3(rIssAu,0,0));
+    iss.vel = add(earth.vel, v3(0, vIssRel, 0));
+
+    gps.pos = add(earth.pos, v3(0,rGpsAu,0));
+    gps.vel = add(earth.vel, v3(-vGpsRel, 0, 0));
+
+    const inc = THREE.MathUtils.degToRad(53);
+    starlink.pos = add(earth.pos, v3(rSlAu,0,0));
+    starlink.vel = add(earth.vel, v3(0, vSlRel*Math.cos(inc), vSlRel*Math.sin(inc)));
+
+    bodies.push(iss,gps,starlink);
+
+    function computeAccelerations(){
+      for(const b of bodies) b.acc = v3(0,0,0);
+      for(let i=0;i<bodies.length;i++){
+        const bi=bodies[i];
+        for(let j=0;j<bodies.length;j++){
+          if(i===j) continue;
+          const bj=bodies[j];
+          const d = sub(bj.pos, bi.pos);
+          const r = len(d) + 1e-12;
+          const factor = (G * bj.mass) / (r*r*r);
+          bi.acc = add(bi.acc, mul(d, factor));
+        }
+      }
+    }
+
+    function velocityVerlet(dt){
+      const axOld = bodies.map(b=>b.acc);
+      // pos
+      for(let i=0;i<bodies.length;i++){
+        const b=bodies[i];
+        b.pos = add(b.pos, add(mul(b.vel, dt), mul(axOld[i], 0.5*dt*dt)));
+      }
+      // new acc
+      computeAccelerations();
+      // vel
+      for(let i=0;i<bodies.length;i++){
+        const b=bodies[i];
+        const aNew=b.acc;
+        const aOld=axOld[i];
+        b.vel = add(b.vel, mul(add(aOld,aNew), 0.5*dt));
+      }
+    }
+
+    computeAccelerations();
+
+    // ===== THREE Scene =====
+    const wrap = document.getElementById("sceneWrap");
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    wrap.appendChild(renderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(55, wrap.clientWidth / wrap.clientHeight, 0.01, 5000);
+    camera.position.set(0, 18, 52);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 6;
+    controls.maxDistance = 260;
+
+    const amb = new THREE.AmbientLight(0xffffff, 0.22);
+    scene.add(amb);
+
+    const sunLight = new THREE.PointLight(0xfff0c2, 2.0, 0, 1.2);
+    sunLight.position.set(0,0,0);
+    scene.add(sunLight);
+
+    // Stars
+    const starCount = 1400;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){
+      const r = 90 + Math.random()*70;
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2*Math.PI*u;
+      const phi = Math.acos(2*v - 1);
+      starPos[i*3+0] = r*Math.sin(phi)*Math.cos(theta);
+      starPos[i*3+1] = r*Math.cos(phi);
+      starPos[i*3+2] = r*Math.sin(phi)*Math.sin(theta);
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPos,3));
+    const starMat = new THREE.PointsMaterial({ color:0xffffff, size:0.6, transparent:true, opacity:0.55 });
+    scene.add(new THREE.Points(starGeo, starMat));
+
+    // Meshes
+    const meshes = new Map();
+
+    function makeSphere(color, radius, isSun=false){
+      const geo = new THREE.SphereGeometry(radius, 32, 22);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.7,
+        metalness: 0.06,
+        emissive: isSun ? new THREE.Color(0xffc85a) : new THREE.Color(0x000000),
+        emissiveIntensity: isSun ? 0.55 : 0.0
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    for(const b of bodies){
+      const r = markerSizeFromRadiusKm(b.radiusKm, b.isSun);
+      const m = makeSphere(b.color, r, b.isSun);
+      scene.add(m);
+      meshes.set(b.name, m);
+    }
+
+    // Orbits (nur für Planeten mit a)
+    function makeOrbit(a,e,color){
+      const pts=[];
+      const seg=500;
+      for(let i=0;i<=seg;i++){
+        const t = (i/seg)*Math.PI*2;
+        const x = (a*Math.cos(t) - a*e);
+        const y = (a*Math.sin(t)*Math.sqrt(1-e*e));
+        pts.push(new THREE.Vector3(x, 0, y));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = new THREE.LineDashedMaterial({ color, dashSize:0.9, gapSize:0.55, transparent:true, opacity:0.30 });
+      const line = new THREE.Line(geo, mat);
+      line.computeLineDistances();
+      return line;
+    }
+
+    for(const d of defs){
+      scene.add(makeOrbit(d.a, d.e, d.color));
+    }
+
+    // ===== Follow =====
+    let followName = "none";
+    followSel.addEventListener("change", ()=> followName = followSel.value);
+
+    function resetView(){
+      followName="none";
+      followSel.value="none";
+      controls.target.set(0,0,0);
+      camera.position.set(0,18,52);
+      controls.update();
+    }
+    resetBtn.addEventListener("click", resetView);
+
+    const updateTimeLabel = ()=>{
+      const days = simTime*365.25;
+      timeLabel.textContent = `t = ${simTime.toFixed(2)} Jahre (${Math.round(days)} Tage)`;
+    };
+
+    // ===== Animation Loop =====
+    const clock = new THREE.Clock();
+
+    function tick(){
+      const dtReal = clock.getDelta(); // seconds
+      const daysPerStep = Number(speed.value);
+
+      // dt in YEARS: (daysPerStep * DAY_IN_YEARS) pro "step"
+      // wir multiplizieren mit dtReal*30 damit es smooth + sichtbar ist (wie vorher)
+      const dt = daysPerStep * DAY_IN_YEARS * (dtReal * 30);
+
+      // physics step
+      velocityVerlet(dt);
+      simTime += dt;
+
+      // update meshes
       for(const b of bodies){
-        if(b.name === "Sonne"){
-          points.push({name:b.name, x:0, y:0, z:0, r:b.r, color:b.color});
-          continue;
-        }
-        const w = (2*Math.PI) / b.period;
-        b.t += w * (Number(speed.value) / 365.25) * 0.9; // stable
-
-        const a = b.a;
-        const e = b.e;
-        const x = (a*Math.cos(b.t) - a*e);
-        const z = (a*Math.sin(b.t) * Math.sqrt(1 - e*e));
-        points.push({name:b.name, x, y:0, z, r:b.r, color:b.color});
-
-        if(b.name === "Erde") earthPos = {x, y:0, z};
+        const m = meshes.get(b.name);
+        // map python x,y,z -> three x,z,y (wir nehmen y als "height")
+        m.position.set(b.pos.x, b.pos.z, b.pos.y);
       }
 
-      // moon (simple)
-      if(earthPos){
-        const mt = simYears * (2*Math.PI/0.0748);
-        points.push({
-          name:"Mond",
-          x: earthPos.x + 6*Math.cos(mt),
-          y: 0,
-          z: earthPos.z + 6*Math.sin(mt),
-          r: 2.5,
-          color:"#d0d0d0"
-        });
+      // follow camera target
+      if (followName !== "none" && meshes.has(followName)){
+        const p = meshes.get(followName).position;
+        controls.target.lerp(p, 0.08);
       }
 
-      // follow target
-      let follow = followSel.value;
-      let target = {x:0,y:0,z:0};
-      if(follow !== "none"){
-        const f = points.find(p=>p.name===follow);
-        if(f) target = {x:f.x, y:f.y, z:f.z};
-      }
-
-      // draw orbits (in plane)
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.globalAlpha = 0.25;
-      ctx.setLineDash([6,8]);
-      ctx.lineWidth = 1;
-      for(const b of bodies){
-        if(b.name==="Sonne") continue;
-        ctx.strokeStyle = "rgba(255,255,255,.35)";
-        ctx.beginPath();
-        const seg=200;
-        for(let i=0;i<=seg;i++){
-          const t = (i/seg)*Math.PI*2;
-          const a = b.a;
-          const e = b.e;
-          const ox = (a*Math.cos(t) - a*e) - target.x;
-          const oz = (a*Math.sin(t)*Math.sqrt(1-e*e)) - target.z;
-          const pr = project({x:ox*scale, y:0, z:oz*scale});
-          const px = pr.x, py = pr.y;
-          if(i===0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // depth sort
-      const rendered = points.map(p=>{
-        const pr = project({x:(p.x-target.x)*scale, y:(p.y-target.y)*scale, z:(p.z-target.z)*scale});
-        return {...p, px: pr.x, py: pr.y, pz: pr.z, ps: pr.s};
-      }).sort((a,b)=>a.pz-b.pz);
-
-      // draw bodies
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      for(const p of rendered){
-        const r = Math.max(1.2, p.r * p.ps * 0.55);
-        // glow for sun
-        if(p.name==="Sonne"){
-          const g = ctx.createRadialGradient(p.px, p.py, r*0.2, p.px, p.py, r*3.2);
-          g.addColorStop(0, "rgba(255,210,90,.65)");
-          g.addColorStop(1, "rgba(255,210,90,0)");
-          ctx.fillStyle = g;
-          ctx.beginPath(); ctx.arc(p.px, p.py, r*3.2, 0, Math.PI*2); ctx.fill();
-        }
-
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.px, p.py, r, 0, Math.PI*2);
-        ctx.fill();
-      }
-
-      ctx.restore();
-
-      // time
-      simYears += (Number(speed.value)/365.25) * 0.016; // stable
-      const days = simYears * 365.25;
-      timeLabel.textContent = `t = ${simYears.toFixed(2)} Jahre (${Math.round(days)} Tage)`;
-
-      requestAnimationFrame(draw);
+      updateTimeLabel();
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
     }
 
-    resetBtn.addEventListener("click", ()=>{
-      rotX = 0.55; rotY = 0.85; zoom = 1.0;
-      followSel.value = "none";
-    });
+    updateTimeLabel();
+    tick();
 
-    // layout sizing
-    function init(){
-      resize();
-      draw();
+    // Resize
+    function onResize(){
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w,h);
+      camera.aspect = w/h;
+      camera.updateProjectionMatrix();
     }
-
-    // set a nice fixed height via CSS sizing
-    window.addEventListener("resize", resize);
-    init();
+    window.addEventListener("resize", onResize);
   </script>
-
-  <style>
-    /* minimal CSS for the canvas container (safe if you prefer to move into styles.css) */
-    .universe-canvas-2d{
-      border-radius: 18px;
-      overflow:hidden;
-      border: 1px solid rgba(14,20,18,.10);
-      background: rgba(14,20,18,.94);
-      height: min(560px, 70vh);
-    }
-    .universe-canvas-2d canvas{
-      width:100%;
-      height:100%;
-      display:block;
-    }
-    .universe-ui-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:16px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .universe-ui-controls{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-    }
-    .u-field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width: 220px;
-    }
-    .u-field span{
-      font-size: 11px;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(14,20,18,.55);
-      font-weight: 750;
-    }
-    .u-field input[type="range"], .u-field select{
-      width:100%;
-    }
-    .u-btn{
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(14,20,18,.10);
-      background: rgba(255,255,255,.60);
-      font-weight: 750;
-      letter-spacing:.08em;
-      text-transform: uppercase;
-      font-size: 12px;
-      cursor:pointer;
-    }
-    .universe-ui-time{
-      font-weight: 700;
-      color: rgba(14,20,18,.70);
-    }
-    .universe-ui-foot{
-      margin-top:10px;
-      font-size: 13px;
-    }
-  </style>
 </body>
 </html>
