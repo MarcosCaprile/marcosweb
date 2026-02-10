@@ -1267,3 +1267,32 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   height:auto;
   background:#0e1412;
 }
+
+/* ===========================
+   Universe Preview Video
+   =========================== */
+
+.u-preview{
+  margin: 0;
+}
+
+.u-video{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;     /* 🔥 wichtig */
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0e1412;      /* schwarzer Rahmen, falls Video lädt */
+  box-shadow: 0 18px 50px rgba(14,20,18,.12);
+}
+
+/* Video füllt den Block sauber */
+.u-video video{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;        /* 🔥 kein Verzerren */
+  border-radius: inherit;
+  display: block;
+}
