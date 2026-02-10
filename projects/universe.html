@@ -4,16 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Universe Simulator · Marcos Caprile-Santos</title>
-  <meta name="description" content="Universe Simulator (Showcase) – kurzer Visual Preview + Link zur interaktiven Full Version." />
+  <meta name="description" content="Universe Simulator – Showcase + Download des Originalcodes inkl. Anleitung zum lokalen Ausführen." />
   <link rel="canonical" href="https://marcos.caprile.net/projects/universe.html" />
-  <meta name="robots" content="index, follow" />
 
   <link rel="icon" type="image/png" href="/favicon.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="/styles.css?v=999" />
+  <meta name="robots" content="index, follow" />
 </head>
 
 <body>
@@ -30,9 +31,9 @@
         <a href="/#about">Über mich</a>
         <a href="/#cv">Lebenslauf</a>
 
-        <!-- Projekte Dropdown -->
+        <!-- Projekte Dropdown (Desktop hover / Mobile tap) -->
         <div class="dropdown" id="projectsDropdown">
-          <button class="dropbtn" aria-expanded="false">
+          <button class="dropbtn" aria-expanded="false" type="button">
             Projekte <span class="chev"></span>
           </button>
           <div class="dropmenu" role="menu" aria-label="Projekte">
@@ -41,15 +42,17 @@
             <a href="/projects/thoughtra.html">Thoughtra</a>
             <a href="/projects/impostor-games.html">Impostor Games</a>
             <a href="/projects/securescreen.html">SecureScreen SDK</a>
-            <a href="/projects/universe.html">Universe Simulator</a>
-            
             <div class="dropsep"></div>
+            <a href="/projects/universe.html" aria-current="page">Universe Simulator</a>
           </div>
         </div>
+
         <a href="/#activities">Activities</a>
         <a href="/#qa">Fragebogen</a>
         <a href="/#social">Social</a>
         <a href="/#contact">Kontakt</a>
+        <a href="/impressum.html">Impressum</a>
+        <a href="/datenschutz.html">Datenschutz</a>
       </div>
     </div>
   </nav>
@@ -58,57 +61,101 @@
     <section class="card reveal">
       <h2>Universe Simulator</h2>
       <p class="muted">
-        Cinematic Preview (Showcase) des Sonnensystem-Visuals.  
-        Die Full Version ist interaktiv (Rotate / Zoom / Speed / Follow) – ohne dass die vollständigen Physik-Details öffentlich sind.
+        Ein interaktiver 3D-Sonnensystem-Simulator (N-Body-Ansatz + Mond + Satelliten + Sterne, Zoom, Follow-Body, Speed-Slider).
+        Der Simulator läuft lokal am besten — hier bekommst du Preview + Download + Setup-Anleitung.
       </p>
-    </section>
 
-    <!-- SHOWCASE -->
-    <section class="card reveal">
-      <div class="showcase">
-        <div class="showcase-media">
-          <!-- OPTION A: GIF -->
-          <img
-            src="/assets/universe-preview.gif"
-            alt="Universe Simulator Preview"
-            loading="lazy"
-          />
-
-          <!-- OPTIONAL BESSER (empfohlen): MP4 statt GIF
-          <video
-            src="/assets/universe-preview.mp4"
-            poster="/assets/universe-preview.jpg"
-            autoplay
-            muted
-            loop
-            playsinline
-          ></video>
-          -->
-        </div>
-
-        <div class="showcase-actions">
-          <a class="btn-primary" href="/projects/universe-live.html">
-            Full Version öffnen
-          </a>
-          <a class="btn-ghost" href="/#projects">
-            Zurück zur Startseite
-          </a>
-        </div>
-
-        <p class="fine" style="margin-top:12px">
-          Hinweis: Die Full Version ist als Visual-Simulator gedacht (Showcase), nicht als wissenschaftliche Simulation.
-        </p>
+      <div class="u-meta">
+        <span class="u-chip">Python</span>
+        <span class="u-chip">Matplotlib 3D</span>
+        <span class="u-chip">N-Body / Velocity-Verlet</span>
+        <span class="u-chip">Interactive Controls</span>
       </div>
     </section>
 
+    <!-- Preview (GIF/Video) -->
     <section class="card reveal">
-      <h3 class="mini">Was man in der Full Version machen kann</h3>
-      <ul class="bullets">
-        <li>Rotate / Zoom / Pan</li>
-        <li>Speed steuern</li>
-        <li>Follow-Body auswählen</li>
-        <li>Reset View</li>
-      </ul>
+      <h3 class="mini">Preview</h3>
+      <p class="muted u-lead">
+        So sieht der Simulator in der echten Ausführung aus:
+      </p>
+
+      <figure class="u-preview">
+        <!-- Option A: GIF -->
+        <img src="/assets/universe-preview.gif" alt="Universe Simulator Preview" loading="lazy">
+
+        <!-- Option B: Video (falls du lieber MP4 nutzt, kommentiere GIF aus und Video ein)
+        <video src="/assets/universe-preview.mp4" controls muted playsinline preload="metadata"></video>
+        -->
+
+        <figcaption class="fine">
+          Tipp: MP4 wirkt oft deutlich schärfer als GIF – beide gehen.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Download -->
+    <section class="card reveal">
+      <h3 class="mini">Download</h3>
+      <p class="muted u-lead">
+        Lade den Code herunter und starte den Simulator lokal:
+      </p>
+
+      <div class="u-download">
+        <div class="u-download-left">
+          <div class="u-download-title">Universe Simulator – Source Code</div>
+          <div class="u-download-sub muted">ZIP · enthält Python-Script + kurze Readme</div>
+        </div>
+
+        <a class="u-btn u-btn-primary" href="/downloads/universe-simulator.zip" download>
+          Download ZIP
+        </a>
+      </div>
+
+      <p class="fine" style="margin-top:12px;">
+        Falls dein Browser den Download nicht startet: Rechtsklick → „Link speichern unter…“
+      </p>
+    </section>
+
+    <!-- Anleitung -->
+    <section class="card reveal">
+      <h3 class="mini">So testest du den Simulator lokal</h3>
+
+      <ol class="u-steps">
+        <li>
+          <strong>Python installieren</strong><br/>
+          Empfohlen: <span class="u-kbd">Python 3.11</span> oder <span class="u-kbd">3.12</span>.
+        </li>
+        <li>
+          <strong>ZIP entpacken</strong><br/>
+          Öffne den entpackten Ordner in VS Code oder im Terminal.
+        </li>
+        <li>
+          <strong>Abhängigkeiten installieren</strong><br/>
+          Im Terminal im Projektordner:
+          <pre class="u-code"><code>python -m pip install --upgrade pip
+pip install numpy matplotlib</code></pre>
+        </li>
+        <li>
+          <strong>Programm starten</strong><br/>
+          Datei ausführen (Name ggf. anpassen):
+          <pre class="u-code"><code>python universe_simulator.py</code></pre>
+        </li>
+        <li>
+          <strong>Wenn kein Fenster erscheint / Interaktion fehlt</strong><br/>
+          Dann fehlt oft ein GUI-Backend. Auf Windows/macOS meist ok – ansonsten:
+          <pre class="u-code"><code># optional (Linux)
+sudo apt-get install python3-tk</code></pre>
+          Danach erneut starten.
+        </li>
+      </ol>
+
+      <div class="u-note">
+        <strong>Controls:</strong>
+        Drag = Rotation · Wheel = Zoom · Follow-Body = Kamera folgt Objekt · Slider = Speed (Tage/Step)
+      </div>
+
+      <p class="fine"><a href="/#projects">← zurück zur Startseite</a></p>
     </section>
   </main>
 
@@ -117,9 +164,11 @@
     <p class="fine"><a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a></p>
   </footer>
 
+  <!-- Script: Jahr + Mobile-Menü + Dropdown (Mobile Tap) -->
   <script>
-    // Footer year
     document.documentElement.classList.add("js");
+
+    // Footer year
     const y = document.getElementById("y");
     if (y) y.textContent = new Date().getFullYear();
 
@@ -134,7 +183,7 @@
       });
     }
 
-    // Dropdown (mobile tap)
+    // Dropdown mobile tap
     const dd = document.getElementById("projectsDropdown");
     const ddBtn = dd ? dd.querySelector(".dropbtn") : null;
     if (dd && ddBtn) {
@@ -146,6 +195,25 @@
         }
       });
     }
+
+    // Scroll reveal (wie auf Hauptseite, pro Block)
+    window.addEventListener("load", () => {
+      const els = document.querySelectorAll(".reveal, .stagger");
+      if (!("IntersectionObserver" in window)) {
+        els.forEach(el => el.classList.add("in"));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.14, rootMargin: "0px 0px -12% 0px" });
+
+      els.forEach(el => io.observe(el));
+    });
   </script>
 </body>
 </html>
