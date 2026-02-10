@@ -1260,3 +1260,10 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
   .u-download{ flex-direction: column; align-items:flex-start; }
   .u-btn{ width: 100%; }
 }
+
+.u-preview video{
+  display:block;
+  width:100%;
+  height:auto;
+  background:#0e1412;
+}
