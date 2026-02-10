@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Universum-Simulation (Newtonsche Gravitation)</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    #hud {
+      position: fixed; left: 12px; top: 12px; z-index: 10;
+      background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 12px; border-radius: 12px; color: #fff; min-width: 280px;
+      backdrop-filter: blur(6px);
+    }
+    #hud label { display:block; font-size: 12px; opacity:.9; margin-top: 8px; }
+    #hud .row { display:flex; gap:8px; align-items:center; }
+    #hud select, #hud input[type="range"], #hud input[type="checkbox"], #hud button {
+      width: 100%;
+    }
+    #hud select, #hud button {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      color: #fff; padding: 8px; border-radius: 10px;
+    }
+    #hud button { cursor:pointer; }
+    #hud small { display:block; margin-top:8px; opacity:.75; line-height: 1.25; }
+    #corner {
+      position: fixed; right: 12px; bottom: 12px; z-index: 10;
+      color: rgba(255,255,255,.7); font-size: 12px;
+      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08);
+      padding: 8px 10px; border-radius: 12px;
+      backdrop-filter: blur(6px);
+    }
+    a { color:#9bd; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="row">
+      <button id="resetBtn">Kamera zurücksetzen</button>
+    </div>
+
+    <label>Objekt verfolgen</label>
+    <select id="followSelect"></select>
+
+    <label>Simulationsgeschwindigkeit (Tage pro Sekunde)</label>
+    <input id="speedRange" type="range" min="0" max="60" value="10" step="0.5" />
+
+    <label>Genauigkeit (Integrationsschritte pro Frame)</label>
+    <input id="substepsRange" type="range" min="1" max="20" value="5" step="1" />
+
+    <label class="row" style="margin-top:10px;">
+      <input id="trailsCheck" type="checkbox" checked style="width:auto;" />
+      <span style="font-size:12px;">Bahnspuren anzeigen</span>
+    </label>
+
+    <label class="row" style="margin-top:6px;">
+      <input id="sunMobileCheck" type="checkbox" />
+      <span style="font-size:12px;">Sonne mitbewegen (N-Body)</span>
+    </label>
+
+    <small>
+      Steuerung: Linksklick ziehen = umsehen • Scroll = zoomen • Rechtsklick ziehen = verschieben<br/>
+      Physik: Newtonsche Gravitation. Standard: Sonne dominiert; optional N-Body (langsamer).
+    </small>
+  </div>
+
+  <div id="corner">
+    Tipp: Wähle „Erde“ oder „Mond“, um die Umlaufbahn direkt zu verfolgen.
+  </div>
+
+  <!-- Three.js + OrbitControls (CDN) -->
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js";
+
+    // ============================================================
+    // Einheiten:
+    //  - Entfernung: Astronomische Einheiten (AU)
+    //  - Zeit: Jahre
+    //  - Masse: Sonnenmassen
+    // -> G = 4π² (so dass a=1 AU => T=1 Jahr für 1 Sonnenmasse)
+    // ============================================================
+    const G = 4 * Math.PI * Math.PI;
+
+    // Für Darstellung: planetare Radien sind real extrem klein -> wir skalieren VISUELL
+    // Positionen/Physik bleiben in echten AU.
+    const VISUAL_RADIUS_SCALE = 180; // größer = Planeten sichtbarer, ABER Verhältnis bleibt korrekt untereinander
+
+    // Begrenzung für Spurenpunkte
+    const TRAIL_MAX_POINTS = 2400;
+
+    // Rendering / Szene
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.0009);
+
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.001, 5000);
+    camera.position.set(0, 6, 16);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+
+    // Licht
+    const ambient = new THREE.AmbientLight(0xffffff, 0.18);
+    scene.add(ambient);
+
+    const sunLight = new THREE.PointLight(0xffffff, 2.2, 0, 2);
+    sunLight.position.set(0, 0, 0);
+    scene.add(sunLight);
+
+    // Sterne (Hintergrund)
+    function makeStars(count = 6000, radius = 1200) {
+      const geom = new THREE.BufferGeometry();
+      const pos = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        // Zufällig auf/innerhalb einer großen Kugel (leicht nach außen gebiased)
+        const u = Math.random();
+        const v = Math.random();
+        const theta = 2 * Math.PI * u;
+        const phi = Math.acos(2 * v - 1);
+        const r = radius * (0.55 + 0.45 * Math.random());
+
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+
+        pos[i*3+0] = x;
+        pos[i*3+1] = y;
+        pos[i*3+2] = z;
+      }
+      geom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.9, sizeAttenuation: true, transparent: true, opacity: 0.9 });
+      const pts = new THREE.Points(geom, mat);
+      scene.add(pts);
+    }
+    makeStars();
+
+    // ============================================================
+    // Körperdefinition
+    // ============================================================
+    function sphereMesh(radiusAU, color, emissive = 0x000000, emissiveIntensity = 0.0) {
+      const geo = new THREE.SphereGeometry(Math.max(radiusAU * VISUAL_RADIUS_SCALE, 0.008), 48, 48);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.7,
+        metalness: 0.0,
+        emissive,
+        emissiveIntensity
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    function makeTrail(color = 0xffffff) {
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(TRAIL_MAX_POINTS * 3);
+      geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geom.setDrawRange(0, 0);
+      const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.65 });
+      const line = new THREE.Line(geom, mat);
+      line.frustumCulled = false;
+      return { line, geom, positions, count: 0 };
+    }
+
+    // Hilfsfunktionen
+    const v3 = () => new THREE.Vector3();
+
+    function circularOrbitVelocity(mu, rAU) {
+      // v = sqrt(mu / r)
+      return Math.sqrt(mu / rAU);
+    }
+
+    // Planeten-Daten (vereinfachte mittlere Werte)
+    // Masses in solar masses (approx), radii in AU (Earth radius ~ 4.263e-5 AU)
+    const bodies = [];
+
+    function addBody({ name, mass, radiusAU, color, pos, vel, parent = null, trailColor = color, emissive=0x000000, emissiveIntensity=0 }) {
+      const mesh = sphereMesh(radiusAU, color, emissive, emissiveIntensity);
+      mesh.position.copy(pos);
+      scene.add(mesh);
+
+      const trail = makeTrail(trailColor);
+      scene.add(trail.line);
+
+      const body = {
+        name, mass, radiusAU,
+        pos: pos.clone(),
+        vel: vel.clone(),
+        mesh,
+        trail,
+        parent, // optional: for reference (moon)
+      };
+      bodies.push(body);
+      return body;
+    }
+
+    // Sonne
+    const sun = addBody({
+      name: "Sonne",
+      mass: 1.0,
+      radiusAU: 0.00465047,          // ~ Sun radius in AU
+      color: 0xffcc66,
+      emissive: 0xffaa33,
+      emissiveIntensity: 0.9,
+      pos: v3().set(0,0,0),
+      vel: v3().set(0,0,0),
+      trailColor: 0xffcc66
+    });
+
+    // Planet radii (AU) rough: Mercury 1.63e-5, Venus 4.05e-5, Earth 4.26e-5, Mars 2.27e-5, Jupiter 4.78e-4,
+    // Saturn 4.03e-4, Uranus 1.71e-4, Neptune 1.66e-4
+    // Planet masses (solar masses) approx: Merc 1.65e-7, Venus 2.45e-6, Earth 3.00e-6, Mars 3.21e-7,
+    // Jupiter 9.54e-4, Saturn 2.86e-4, Uranus 4.37e-5, Neptune 5.15e-5
+
+    const planetSpecs = [
+      { name:"Merkur", a:0.387, mass:1.65e-7, radiusAU:1.63e-5, color:0xb0b0b0 },
+      { name:"Venus",  a:0.723, mass:2.45e-6, radiusAU:4.05e-5, color:0xe0c16d },
+      { name:"Erde",   a:1.000, mass:3.00e-6, radiusAU:4.263e-5, color:0x3b82f6 },
+      { name:"Mars",   a:1.524, mass:3.21e-7, radiusAU:2.27e-5, color:0xff6b4a },
+      { name:"Jupiter",a:5.203, mass:9.54e-4, radiusAU:4.78e-4, color:0xd6a27a },
+      { name:"Saturn", a:9.537, mass:2.86e-4, radiusAU:4.03e-4, color:0xe6c38a },
+      { name:"Uranus", a:19.191,mass:4.37e-5, radiusAU:1.71e-4, color:0x6ee7ff },
+      { name:"Neptun", a:30.07, mass:5.15e-5, radiusAU:1.66e-4, color:0x2563eb },
+    ];
+
+    // Wir setzen die Planeten auf die x-Achse und geben eine tangentiale Geschwindigkeit in +z
+    // Für eine „saubere“ Demo nutzen wir Kreisbahnen; real wären Exzentrizitäten dabei.
+    const planetBodies = {};
+    for (const p of planetSpecs) {
+      const r = p.a;
+      const mu = G * sun.mass;                 // dominant: Sonnenmasse
+      const v = circularOrbitVelocity(mu, r);  // AU/Jahr
+
+      const b = addBody({
+        name: p.name,
+        mass: p.mass,
+        radiusAU: p.radiusAU,
+        color: p.color,
+        pos: v3().set(r, 0, 0),
+        vel: v3().set(0, 0, v),
+        trailColor: p.color
+      });
+      planetBodies[p.name] = b;
+    }
+
+    // Mond: mittlere Distanz ~ 384,400 km ~ 0.00257 AU, Masse ~ 3.694e-8 Sonnenmassen, Radius ~ 1.16e-5 AU
+    const earth = planetBodies["Erde"];
+    const moonDist = 0.00257;
+    const moonMass = 3.694e-8;
+    const moonRadiusAU = 1.16e-5;
+
+    // Für den Mond: initial relativ zur Erde in x-Richtung, tangential relativ in +z
+    // Kreisbahn um Erde: v = sqrt(G*M_erde / r)
+    const muEarth = G * earth.mass;
+    const vMoonRel = circularOrbitVelocity(muEarth, moonDist);
+
+    const moon = addBody({
+      name: "Mond",
+      mass: moonMass,
+      radiusAU: moonRadiusAU,
+      color: 0xd1d5db,
+      pos: earth.pos.clone().add(v3().set(moonDist, 0, 0)),
+      vel: earth.vel.clone().add(v3().set(0, 0, vMoonRel)),
+      trailColor: 0xd1d5db,
+      parent: earth
+    });
+
+    // Saturn-Ringe (optisch) — optional hübsch
+    {
+      const saturn = planetBodies["Saturn"];
+      const ringGeo = new THREE.RingGeometry(
+        Math.max(saturn.radiusAU * VISUAL_RADIUS_SCALE * 1.4, 0.02),
+        Math.max(saturn.radiusAU * VISUAL_RADIUS_SCALE * 2.4, 0.03),
+        80
+      );
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: 0xf2e8c9,
+        roughness: 0.9,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI * 0.5;
+      saturn.mesh.add(ring);
+    }
+
+    // ============================================================
+    // UI: Follow / Speed / Trails
+    // ============================================================
+    const followSelect = document.getElementById("followSelect");
+    const speedRange = document.getElementById("speedRange");
+    const substepsRange = document.getElementById("substepsRange");
+    const trailsCheck = document.getElementById("trailsCheck");
+    const sunMobileCheck = document.getElementById("sunMobileCheck");
+    const resetBtn = document.getElementById("resetBtn");
+
+    for (const b of bodies) {
+      const opt = document.createElement("option");
+      opt.value = b.name;
+      opt.textContent = b.name;
+      followSelect.appendChild(opt);
+    }
+    followSelect.value = "Sonne";
+
+    let followBody = sun;
+
+    followSelect.addEventListener("change", () => {
+      followBody = bodies.find(b => b.name === followSelect.value) ?? sun;
+      // Sofort Target setzen
+      controls.target.copy(followBody.mesh.position);
+    });
+
+    trailsCheck.addEventListener("change", () => {
+      const on = trailsCheck.checked;
+      for (const b of bodies) b.trail.line.visible = on;
+    });
+
+    resetBtn.addEventListener("click", () => {
+      camera.position.set(0, 6, 16);
+      controls.target.set(0,0,0);
+      controls.update();
+    });
+
+    // ============================================================
+    // Physik: Integration (Velocity Verlet / symplectic-ish)
+    // Für Performance: Standard = nur Sonne -> alle Planeten + Mond werden von Sonne beeinflusst,
+    // und Mond zusätzlich von Erde. Optional: N-Body (alle beeinflussen alle, Sonne beweglich).
+    // ============================================================
+    function computeAccelStandard(body) {
+      // Beschleunigung durch Sonne (+ bei Mond zusätzlich Erde)
+      const a = v3().set(0,0,0);
+
+      if (body !== sun) {
+        const r = sun.pos.clone().sub(body.pos);
+        const dist2 = Math.max(r.lengthSq(), 1e-12);
+        const dist = Math.sqrt(dist2);
+        const factor = (G * sun.mass) / (dist2 * dist); // = G*M / r^3
+        a.add(r.multiplyScalar(factor));
+      }
+
+      if (body === moon) {
+        const rE = earth.pos.clone().sub(moon.pos);
+        const dist2E = Math.max(rE.lengthSq(), 1e-12);
+        const distE = Math.sqrt(dist2E);
+        const factorE = (G * earth.mass) / (dist2E * distE);
+        a.add(rE.multiplyScalar(factorE));
+      }
+      return a;
+    }
+
+    function computeAccelNBody(index) {
+      const bi = bodies[index];
+      const a = v3().set(0,0,0);
+
+      for (let j = 0; j < bodies.length; j++) {
+        if (j === index) continue;
+        const bj = bodies[j];
+        const r = bj.pos.clone().sub(bi.pos);
+        const dist2 = Math.max(r.lengthSq(), 1e-12);
+        const dist = Math.sqrt(dist2);
+        const factor = (G * bj.mass) / (dist2 * dist);
+        a.add(r.multiplyScalar(factor));
+      }
+      return a;
+    }
+
+    function step(dt) {
+      const useNBody = sunMobileCheck.checked;
+
+      // Velocity Verlet:
+      // v(t+dt/2) = v(t) + a(t)*dt/2
+      // x(t+dt)   = x(t) + v(t+dt/2)*dt
+      // a(t+dt)   = accel(x(t+dt))
+      // v(t+dt)   = v(t+dt/2) + a(t+dt)*dt/2
+
+      const accels = new Array(bodies.length);
+
+      // a(t)
+      if (useNBody) {
+        for (let i=0;i<bodies.length;i++) accels[i] = computeAccelNBody(i);
+      } else {
+        // Sonne bleibt fix (wenn nicht NBody)
+        for (let i=0;i<bodies.length;i++) accels[i] = computeAccelStandard(bodies[i]);
+        accels[0].set(0,0,0); // Sonne
+      }
+
+      // half-step velocity + full-step position
+      for (let i=0;i<bodies.length;i++) {
+        const b = bodies[i];
+        if (!useNBody && b === sun) continue;
+
+        b.vel.addScaledVector(accels[i], dt * 0.5);
+        b.pos.addScaledVector(b.vel, dt);
+      }
+
+      // a(t+dt)
+      if (useNBody) {
+        for (let i=0;i<bodies.length;i++) accels[i] = computeAccelNBody(i);
+      } else {
+        for (let i=0;i<bodies.length;i++) accels[i] = computeAccelStandard(bodies[i]);
+        accels[0].set(0,0,0);
+      }
+
+      // finish velocity
+      for (let i=0;i<bodies.length;i++) {
+        const b = bodies[i];
+        if (!useNBody && b === sun) continue;
+        b.vel.addScaledVector(accels[i], dt * 0.5);
+      }
+    }
+
+    // Trail update
+    function pushTrail(body) {
+      if (!trailsCheck.checked) return;
+      const t = body.trail;
+      const i = Math.min(t.count, TRAIL_MAX_POINTS - 1);
+
+      t.positions[i*3+0] = body.pos.x;
+      t.positions[i*3+1] = body.pos.y;
+      t.positions[i*3+2] = body.pos.z;
+
+      t.count = Math.min(t.count + 1, TRAIL_MAX_POINTS);
+      t.geom.setDrawRange(0, t.count);
+      t.geom.attributes.position.needsUpdate = true;
+
+      // Wenn voll: schiebe (ring buffer wäre schneller, aber das ist okay)
+      if (t.count === TRAIL_MAX_POINTS) {
+        t.positions.copyWithin(0, 3);
+        t.count = TRAIL_MAX_POINTS - 1;
+      }
+    }
+
+    // ============================================================
+    // Animation Loop
+    // ============================================================
+    let last = performance.now();
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dtMs = Math.min(60, now - last);
+      last = now;
+
+      const daysPerSecond = parseFloat(speedRange.value); // Tage / Sek
+      const dtYearsPerFrame = (daysPerSecond / 365.25) * (dtMs / 1000);
+
+      const substeps = parseInt(substepsRange.value, 10);
+      const subDt = dtYearsPerFrame / substeps;
+
+      for (let k = 0; k < substeps; k++) step(subDt);
+
+      // Meshes & Trails aktualisieren
+      for (const b of bodies) {
+        b.mesh.position.copy(b.pos);
+        pushTrail(b);
+      }
+
+      // Kamera verfolgt ausgewähltes Objekt
+      if (followBody) {
+        // Zielpunkt auf den Körper setzen, aber Kamera nicht "snappen"
+        controls.target.lerp(followBody.mesh.position, 0.15);
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    // Resize
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>
