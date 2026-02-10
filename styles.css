@@ -1108,3 +1108,155 @@ html.reveal-on .stagger.in > *:nth-child(12){ transition-delay: .60s; }
 .universe-foot{
   font-size: 13px;
 }
+/* ===========================
+   Universe Project Page Extras
+   =========================== */
+
+.u-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top: 14px;
+}
+
+.u-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(18,63,51,.18);
+  background: rgba(255,255,255,.70);
+  color: rgba(18,63,51,.92);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.u-lead{
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.u-preview{
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(14,20,18,.10);
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 16px 44px rgba(14,20,18,.08);
+}
+
+.u-preview img,
+.u-preview video{
+  display:block;
+  width: 100%;
+  height: auto;
+  background: #0e1412;
+}
+
+.u-download{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(14,20,18,.10);
+  background: rgba(255,255,255,.88);
+}
+
+.u-download-title{
+  font-weight: 850;
+  color: rgba(18,63,51,.95);
+}
+
+.u-download-sub{
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.u-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(14,20,18,.12);
+  background: rgba(255,255,255,.70);
+  color: rgba(18,63,51,.95);
+  text-decoration:none;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.u-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(14,20,18,.10);
+  border-color: rgba(18,63,51,.22);
+}
+
+.u-btn-primary{
+  background: linear-gradient(135deg, rgba(18,63,51,.95), rgba(25,85,68,.95));
+  border-color: rgba(184,155,94,.28);
+  color: #fff;
+}
+
+.u-btn-primary:hover{
+  box-shadow: 0 18px 50px rgba(14,20,18,.16);
+  border-color: rgba(184,155,94,.38);
+}
+
+.u-steps{
+  margin: 0;
+  padding-left: 18px;
+}
+
+.u-steps li{
+  margin: 12px 0;
+  color: rgba(14,20,18,.78);
+}
+
+.u-kbd{
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(14,20,18,.12);
+  background: rgba(255,255,255,.75);
+  font-weight: 800;
+  color: rgba(18,63,51,.95);
+}
+
+.u-code{
+  margin: 10px 0 0;
+  border-radius: 14px;
+  border: 1px solid rgba(14,20,18,.10);
+  background: rgba(14,20,18,.92);
+  color: rgba(255,255,255,.92);
+  padding: 12px 14px;
+  overflow:auto;
+}
+
+.u-code code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.u-note{
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(184,155,94,.20);
+  background: rgba(184,155,94,.10);
+  color: rgba(14,20,18,.78);
+}
+
+@media (max-width: 720px){
+  .u-download{ flex-direction: column; align-items:flex-start; }
+  .u-btn{ width: 100%; }
+}
